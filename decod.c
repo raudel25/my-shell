@@ -7,16 +7,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define LSH_TOK_BUFSIZE 64
+#define LSH_TOK_DELIM " \t\r\n\a"
 
 char *lsh_read_line(void)
 {
     char *line = NULL;
     ssize_t bufsize = 0; // have getline allocate a buffer for us
 
-    if (getline(&line, &bufsize, stdin) == -1){
+    if (getline(&line, &bufsize, stdin) == -1) {
         if (feof(stdin)) {
             exit(EXIT_SUCCESS);  // We recieved an EOF
-        } else  {
+        } else {
             perror("readline");
             exit(EXIT_FAILURE);
         }
@@ -25,8 +27,6 @@ char *lsh_read_line(void)
     return line;
 }
 
-#define LSH_TOK_BUFSIZE 64
-#define LSH_TOK_DELIM " \t\r\n\a"
 char **lsh_split_line(char *line)
 {
     int bufsize = LSH_TOK_BUFSIZE, position = 0;
