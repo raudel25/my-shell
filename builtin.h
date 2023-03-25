@@ -7,7 +7,7 @@
 
 #endif //SHELL_BUILTIN_H
 
-extern char* builtin_str[3];
+extern char *builtin_str[3];
 
 extern int (*builtin_func[3])(char **);
 

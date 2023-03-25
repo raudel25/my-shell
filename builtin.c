@@ -8,7 +8,7 @@
 
 #include "builtin.h"
 
-char* builtin_str[3] = {
+char *builtin_str[3] = {
         "cd",
         "help",
         "exit"
