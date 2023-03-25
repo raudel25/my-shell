@@ -7,5 +7,5 @@
 
 #endif //SHELL_DECOD_H
 
-char *lsh_read_line(void);
-char **lsh_split_line(char *line);
+char *my_sh_read_line(void);
+char **my_sh_split_line(char *line);

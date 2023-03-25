@@ -8,4 +8,4 @@
 #endif //SHELL_EXECUTE_H
 
 
-int lsh_execute(char **args);
+int my_sh_execute(char **args);

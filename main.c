@@ -2,8 +2,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pwd.h>
+
 #include "decod.h"
 #include "execute.h"
+
+#define BOLD_CYAN "\033[1;36m"
+#define WHITE "\033[0m"
+#define BOLD_RED "\033[1;31m"
 
 void head_shell(){
     struct passwd *pw;
@@ -15,13 +20,10 @@ void head_shell(){
     char cwd[1024];
     getcwd(cwd, sizeof(cwd));
 
-    printf("myshell@");
-    printf("%s", pw->pw_name);
-    printf(":%s", cwd);
-    printf(" $");
+    printf("%s%s%s:%s%s$ %s",BOLD_RED,"my_shell@",pw->pw_name,BOLD_CYAN,cwd,WHITE);
 }
 
-void lsh_loop(void)
+void my_sh_loop(void)
 {
     char *line;
     char **args;
@@ -29,9 +31,9 @@ void lsh_loop(void)
 
     do {
         head_shell();
-        line = lsh_read_line();
-        args = lsh_split_line(line);
-        status = lsh_execute(args);
+        line = my_sh_read_line();
+        args = my_sh_split_line(line);
+        status = my_sh_execute(args);
 
         free(line);
         free(args);
@@ -39,6 +41,6 @@ void lsh_loop(void)
 }
 
 int main() {
-    lsh_loop();;
+    my_sh_loop();;
     return 0;
 }

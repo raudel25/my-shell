@@ -2,15 +2,16 @@
 // Created by raudel on 3/23/2023.
 //
 
-#include "decod.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define LSH_TOK_BUFSIZE 64
-#define LSH_TOK_DELIM " \t\r\n\a"
+#include "decod.h"
 
-char *lsh_read_line(void)
+#define MY_SH_TOK_BUFSIZE 64
+#define MY_SH_TOK_DELIM " \t\r\n\a"
+
+char *my_sh_read_line(void)
 {
     char *line = NULL;
     ssize_t bufsize = 0; // have getline allocate a buffer for us
@@ -27,32 +28,32 @@ char *lsh_read_line(void)
     return line;
 }
 
-char **lsh_split_line(char *line)
+char **my_sh_split_line(char *line)
 {
-    int bufsize = LSH_TOK_BUFSIZE, position = 0;
+    int bufsize = MY_SH_TOK_BUFSIZE, position = 0;
     char **tokens = malloc(bufsize * sizeof(char*));
     char *token;
 
     if (!tokens) {
-        fprintf(stderr, "lsh: allocation error\n");
+        fprintf(stderr, "my_sh: allocation error\n");
         exit(EXIT_FAILURE);
     }
 
-    token = strtok(line, LSH_TOK_DELIM);
+    token = strtok(line, MY_SH_TOK_DELIM);
     while (token != NULL) {
         tokens[position] = token;
         position++;
 
         if (position >= bufsize) {
-            bufsize += LSH_TOK_BUFSIZE;
+            bufsize += MY_SH_TOK_BUFSIZE;
             tokens = realloc(tokens, bufsize * sizeof(char*));
             if (!tokens) {
-                fprintf(stderr, "lsh: allocation error\n");
+                fprintf(stderr, "my_sh: allocation error\n");
                 exit(EXIT_FAILURE);
             }
         }
 
-        token = strtok(NULL, LSH_TOK_DELIM);
+        token = strtok(NULL, MY_SH_TOK_DELIM);
     }
     tokens[position] = NULL;
     return tokens;
