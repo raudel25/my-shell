@@ -52,7 +52,7 @@ Mkfile.old
 dkms.conf
 
 cmake-build-debug
-myshell
+my_shell
 
 .idea/
 .vscode/

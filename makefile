@@ -1,5 +1,5 @@
 dev:
-	gcc -o myshell main.c execute.c decod.c && ./myshell
+	gcc -o my_shell main.c execute.c decod.c builtin.c execute.h decod.h builtin.h && ./my_shell
 
 build:
-	gcc -o myshell main.c execute.c decod.c
+	gcc -o my_shell main.c main.c execute.c decod.c builtin.c execute.h decod.h builtin.h
