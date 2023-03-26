@@ -31,10 +31,14 @@ void my_sh_loop(void) {
     do {
         head_shell(pw->pw_name);
         line = my_sh_read_line();
-        args = my_sh_split_line(line);
+
+        char *new_line = my_sh_decod_line(line);
+        free(line);
+
+        args = my_sh_split_line(new_line);
         status = my_sh_execute(args);
 
-        free(line);
+        free(new_line);
         free(args);
     } while (status);
 }
