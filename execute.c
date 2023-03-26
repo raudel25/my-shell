@@ -11,9 +11,9 @@
 #include "decod.h"
 #include "builtin.h"
 #include "execute.h"
-#include "vec.h"
+#include "list.h"
 
-int *pid_history = NULL;
+List *pid_history = NULL;
 
 int redirect_instr(char *args) {
     if (strcmp(args, "<") == 0)
@@ -90,7 +90,7 @@ int my_sh_launch(char **args, int fd_in, int fd_out, int fd_next) {
     } else if (pid < 0) {
         perror("my_shell");
     } else {
-        vector_add(&pid_history, pid);
+        append(pid_history, pid);
 
         if (fd_in != -1){
             close(fd_in);
@@ -100,9 +100,9 @@ int my_sh_launch(char **args, int fd_in, int fd_out, int fd_next) {
         }
 
         if (fd_next == -1) {
-            for (int i = 0; i < vector_size(pid_history); ++i) {
+            for (int i = 0; i < pid_history->len; ++i) {
                 do {
-                    int c_pid = pid_history[i];
+                    int c_pid = pid_history->array[i];
                     waitpid(c_pid, &status, WUNTRACED);
                 } while (!WIFEXITED(status) && !WIFSIGNALED(status));
             }
@@ -133,6 +133,13 @@ void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
 
     if (instr == 0) {
         fd[0] = redirect_in(args[k + 1]);
+
+        if (args[k + 2] != NULL) {
+            instr = redirect_instr(args[k + 2]);
+            if (instr == 1 || instr == 2) k += 2;
+            if (instr == 3) k++;
+        }
+
         aux[1] = k + 2;
     }
     if (instr == 1) {
