@@ -9,7 +9,6 @@
 #include "decod.h"
 
 #define MY_SH_TOK_BUFSIZE 64
-#define MY_SH_TOK_DELIM " \t\r\n\a"
 
 char *my_sh_read_line() {
     char *line = NULL;
@@ -27,7 +26,7 @@ char *my_sh_read_line() {
     return line;
 }
 
-char **my_sh_split_line(char *line)
+char **my_sh_split_line(char *line,char *split)
 {
     int bufsize = MY_SH_TOK_BUFSIZE, position = 0;
     char **tokens = malloc(bufsize * sizeof(char*));
@@ -38,7 +37,7 @@ char **my_sh_split_line(char *line)
         exit(EXIT_FAILURE);
     }
 
-    token = strtok(line, MY_SH_TOK_DELIM);
+    token = strtok(line, split);
     while (token != NULL) {
         tokens[position] = token;
         position++;
@@ -52,7 +51,7 @@ char **my_sh_split_line(char *line)
             }
         }
 
-        token = strtok(NULL, MY_SH_TOK_DELIM);
+        token = strtok(NULL, split);
     }
     tokens[position] = NULL;
     return tokens;

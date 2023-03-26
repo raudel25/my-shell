@@ -53,6 +53,7 @@ dkms.conf
 
 cmake-build-debug
 my_shell
+history.txt
 
 .idea/
 .vscode/
