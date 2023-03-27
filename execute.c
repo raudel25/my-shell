@@ -188,7 +188,6 @@ int my_sh_execute(char **args) {
         new_args[end] = NULL;
 
         result = my_sh_launch(new_args, fd[0], fd[1], fd[2]);
-        free(new_args);
 
         init = aux[1];
         if (args[end] == NULL || args[init] == NULL)
