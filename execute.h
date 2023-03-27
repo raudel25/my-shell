@@ -11,4 +11,6 @@
 
 extern List *pid_history;
 
-int my_sh_execute(char **args);
+int my_sh_execute(char *new_line,int save);
+
+int my_sh_execute_args(char **args);

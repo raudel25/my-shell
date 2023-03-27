@@ -13,6 +13,8 @@
 #include "execute.h"
 #include "list.h"
 
+#define MY_SH_TOK_DELIM " \t\r\n\a"
+
 List *pid_history = NULL;
 
 int redirect_instr(char *args) {
@@ -160,7 +162,42 @@ void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
 
 }
 
-int my_sh_execute(char **args) {
+int my_sh_execute(char *new_line,int save){
+    int status=1;
+    char *aux = (char *) malloc(strlen(new_line));
+    strcpy(aux, new_line);
+
+    char **args = my_sh_split_line(new_line, MY_SH_TOK_DELIM);
+
+
+    if (strcmp(args[0], "again") == 0) {
+        int q = 0;
+        if (args[1] != NULL) {
+            if (strlen(args[1]) == 1 && args[1][0] - '0' > 0 && args[1][0] - '0' < 10) q = args[1][0] - '0';
+            if (strcmp(args[1], "10") == 0) q = 10;
+        }
+
+        char *c_again = get_again(q);
+
+        if (q != 0 && c_again != NULL) {
+            status = my_sh_execute(c_again,1);
+        } else
+            printf("my_sh: incorrect command again\n");
+
+        free(c_again);
+    } else {
+        if (save) save_history(aux);
+
+        status = my_sh_execute_args(args);
+    }
+
+    free(aux);
+    free(args);
+
+    return status;
+}
+
+int my_sh_execute_args(char **args) {
     if (args[0] == NULL)
         return 1;
 
@@ -183,11 +220,13 @@ int my_sh_execute(char **args) {
         char **new_args = (char **) malloc((end - init) * sizeof(char *));
 
         for (int i = init; i < end; i++) {
-            new_args[i - init] = args[i];
+            new_args[i - init] = (char *) malloc(strlen(args[i]));
+            strcpy(new_args[i-init],args[i]);
         }
         new_args[end] = NULL;
 
         result = my_sh_launch(new_args, fd[0], fd[1], fd[2]);
+        free(new_args);
 
         init = aux[1];
         if (args[end] == NULL || args[init] == NULL)

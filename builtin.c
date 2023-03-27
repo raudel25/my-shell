@@ -77,9 +77,6 @@ int my_sh_exit() {
 void save_history(char *line) {
     char *end_ptr = 0;
     char *path = my_sh_path_history();
-    char *aux=(char*) malloc(strlen(line)+1);
-    strcpy(aux,"#");
-    strcat(aux,line);
 
     int fd = (int) strtol(path, &end_ptr, 10);
 
@@ -87,10 +84,10 @@ void save_history(char *line) {
         fd = open(path, O_WRONLY | O_APPEND | O_CREAT, 0600);
     }
 
-    write(fd, aux, strlen(aux));
+    write(fd, "#", 1);
+    write(fd, line, strlen(line));
     close(fd);
     free(path);
-    free(aux);
 }
 
 char **get_history() {
