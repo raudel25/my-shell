@@ -40,13 +40,38 @@ void my_sh_loop(void) {
         line = my_sh_read_line();
 
         char *new_line = my_sh_decod_line(line);
-        char *aux=(char*) malloc(strlen(new_line));
-        strcpy(aux,new_line);
+        char *aux = (char *) malloc(strlen(new_line));
+        strcpy(aux, new_line);
 
         args = my_sh_split_line(new_line, MY_SH_TOK_DELIM);
-        if (line[0] != ' ') save_history(aux);
 
-        status = my_sh_execute(args);
+
+        if (strcmp(args[0], "again") == 0) {
+            int q = 0;
+            if (args[1] != NULL) {
+                if (strlen(args[1]) == 1 && args[1][0] - '0' > 0 && args[1][0] - '0' < 10) q = args[1][0] - '0';
+                if (strcmp(args[1], "10") == 0) q = 10;
+            }
+
+            char *c_again = get_again(q);
+
+            if (q != 0 && c_again != NULL) {
+
+                save_history(c_again);
+                char **new_args = my_sh_split_line(c_again, MY_SH_TOK_DELIM);
+
+                status = my_sh_execute(new_args);
+
+                free(new_args);
+            } else
+                printf("my_sh: incorrect command again\n");
+
+            free(c_again);
+        } else {
+            if (line[0] != ' ') save_history(aux);
+
+            status = my_sh_execute(args);
+        }
 
         free(aux);
         free(line);

@@ -77,6 +77,9 @@ int my_sh_exit() {
 void save_history(char *line) {
     char *end_ptr = 0;
     char *path = my_sh_path_history();
+    char *aux=(char*) malloc(strlen(line)+1);
+    strcpy(aux,"#");
+    strcat(aux,line);
 
     int fd = (int) strtol(path, &end_ptr, 10);
 
@@ -84,9 +87,10 @@ void save_history(char *line) {
         fd = open(path, O_WRONLY | O_APPEND | O_CREAT, 0600);
     }
 
-    write(fd, line, strlen(line));
+    write(fd, aux, strlen(aux));
     close(fd);
     free(path);
+    free(aux);
 }
 
 char **get_history() {
@@ -105,26 +109,52 @@ char **get_history() {
     close(fd);
 
     free(path);
-    char **args = my_sh_split_line(buffer, "\n");
+    char **args = my_sh_split_line(buffer, "\t\r\n\a");
 
     return args;
 }
 
 int show_history() {
     char **args = get_history();
-    char **history = (char **) malloc(10 * sizeof(char *));
 
     int i;
     for (i = 0; args[i] != NULL; i++) {
+        if(args[i][0]!='#') break;
     }
 
     int top = i < 10 ? 0 : i - 10;
     for (int j = top; j < i; j++) {
-        printf("%d: %s\n", j-top+1, args[j]);
+        char *aux= eliminate_first(args[j]);
+        printf("%d: %s\n", j - top + 1, aux);
+        free(aux);
     }
 
     free(args);
-    free(history);
 
     return 1;
+}
+
+char *get_again(int ind) {
+    char **args = get_history();
+    char *again = NULL;
+
+    int i;
+    for (i = 0; args[i] != NULL; i++) {
+        if(args[i][0]!='#') break;
+    }
+
+    int top = i < 10 ? 0 : i - 10;
+    for (int j = top; j < i; j++) {
+        if (ind == j - top + 1) {
+            char *aux= eliminate_first(args[j]);
+            again = (char *) malloc(strlen(aux) + 1);
+            strcpy(again, aux);
+            strcat(again, "\n");
+            free(aux);
+        }
+    }
+
+    free(args);
+
+    return again;
 }

@@ -26,3 +26,5 @@ void save_history(char *line);
 int show_history();
 
 char **get_history();
+
+char *get_again(int ind);

@@ -96,7 +96,21 @@ char *my_sh_decod_line(const char *line) {
         new_line[x] = aux_line[x];
     }
     free(aux_line);
+
+    if (new_line[j - 1] != '\n') new_line[j++] = '\n';
     new_line[j] = 0;
 
     return (char *) new_line;
+}
+
+char *eliminate_first(char *line) {
+    char *new_line = (char *) malloc(strlen(line) - 1);
+
+    int i;
+    for (i = 0; i < strlen(line) - 1; i++) {
+        new_line[i] = line[i + 1];
+    }
+    new_line[i] = 0;
+
+    return new_line;
 }
