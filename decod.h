@@ -11,6 +11,6 @@ char *my_sh_read_line();
 
 char **my_sh_split_line(char *line,char *split);
 
-char *my_sh_decod_line(const char *line);
+char *my_sh_decod_line(char *line);
 
 char *eliminate_first(char *line);

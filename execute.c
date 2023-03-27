@@ -162,13 +162,15 @@ void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
 
 }
 
-int my_sh_execute(char *new_line,int save){
-    int status=1;
+int my_sh_execute(char *new_line, int save) {
+    int status = 1;
     char *aux = (char *) malloc(strlen(new_line));
     strcpy(aux, new_line);
 
     char **args = my_sh_split_line(new_line, MY_SH_TOK_DELIM);
 
+    if (args[0] == NULL)
+        return 1;
 
     if (strcmp(args[0], "again") == 0) {
         int q = 0;
@@ -198,9 +200,6 @@ int my_sh_execute(char *new_line,int save){
 }
 
 int my_sh_execute_args(char **args) {
-    if (args[0] == NULL)
-        return 1;
-
     for (int i = 0; i < my_sh_num_builtins(); i++) {
         if (strcmp(args[0], builtin_str[i]) == 0) {
             return (*builtin_func[i])(args);

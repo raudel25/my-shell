@@ -8,13 +8,13 @@
 
 #include "decod.h"
 
-#define MY_SH_TOK_BUFSIZE 64
+#define MY_SH_TOK_BUF_SIZE 64
 
 char *my_sh_read_line() {
     char *line = NULL;
-    ssize_t bufsize = 0; // have getline allocate a buffer for us
+    size_t buf_size = 0;
 
-    if (getline(&line, &bufsize, stdin) == -1) {
+    if (getline(&line, &buf_size, stdin) == -1) {
         if (feof(stdin)) {
             exit(EXIT_SUCCESS);  // We recieved an EOF
         } else {
@@ -28,8 +28,8 @@ char *my_sh_read_line() {
 
 char **my_sh_split_line(char *line,char *split)
 {
-    int bufsize = MY_SH_TOK_BUFSIZE, position = 0;
-    char **tokens = malloc(bufsize * sizeof(char*));
+    int buf_size = MY_SH_TOK_BUF_SIZE, position = 0;
+    char **tokens = malloc(buf_size * sizeof(char*));
     char *token;
 
     if (!tokens) {
@@ -42,9 +42,9 @@ char **my_sh_split_line(char *line,char *split)
         tokens[position] = token;
         position++;
 
-        if (position >= bufsize) {
-            bufsize += MY_SH_TOK_BUFSIZE;
-            tokens = realloc(tokens, bufsize * sizeof(char*));
+        if (position >= buf_size) {
+            buf_size += MY_SH_TOK_BUF_SIZE;
+            tokens = realloc(tokens, buf_size * sizeof(char*));
             if (!tokens) {
                 fprintf(stderr, "my_sh: allocation error\n");
                 exit(EXIT_FAILURE);
@@ -57,7 +57,7 @@ char **my_sh_split_line(char *line,char *split)
     return tokens;
 }
 
-char *my_sh_decod_line(const char *line) {
+char *my_sh_decod_line(char *line) {
     char *aux_line = (char *) malloc(3 * strlen(line));
 
     int j = 0;

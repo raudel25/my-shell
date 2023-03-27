@@ -21,7 +21,7 @@ void head_shell(char *name) {
     printf("%smy_shell@%s:%s%s$ %s", BOLD_RED, name, BOLD_CYAN, cwd, WHITE);
 }
 
-void my_sh_loop(void) {
+void my_sh_loop() {
     char *line;
     int status;
 
@@ -51,5 +51,9 @@ void my_sh_loop(void) {
 int main() {
     pid_history = createList();
     my_sh_loop();
+
+    free(home);
+    free(pid_history);
+
     return 0;
 }
