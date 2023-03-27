@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pwd.h>
+#include <string.h>
 
 #include "decod.h"
 #include "execute.h"
@@ -31,17 +32,24 @@ void my_sh_loop(void) {
     uid = getuid();
     pw = getpwuid(uid);
 
+    home = (char *) malloc(strlen(pw->pw_dir));
+    strcpy(home,pw->pw_dir);
+
     do {
         head_shell(pw->pw_name);
         line = my_sh_read_line();
 
         char *new_line = my_sh_decod_line(line);
-        if (line[0] != ' ') save_history(new_line);
-        free(line);
+        char *aux=(char*) malloc(strlen(new_line));
+        strcpy(aux,new_line);
 
-        args = my_sh_split_line(new_line,MY_SH_TOK_DELIM);
+        args = my_sh_split_line(new_line, MY_SH_TOK_DELIM);
+        if (line[0] != ' ') save_history(aux);
+
         status = my_sh_execute(args);
 
+        free(aux);
+        free(line);
         free(new_line);
         free(args);
     } while (status);

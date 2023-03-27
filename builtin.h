@@ -7,6 +7,8 @@
 
 #endif //SHELL_BUILTIN_H
 
+extern char *home;
+
 extern char *builtin_str[4];
 
 extern int (*builtin_func[4])(char **);

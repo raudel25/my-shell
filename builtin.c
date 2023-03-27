@@ -11,7 +11,9 @@
 #include "builtin.h"
 #include "decod.h"
 
-#define HISTORY_FILE "history.txt"
+#define HISTORY_FILE ".my_sh_history"
+
+char *home = NULL;
 
 char *builtin_str[4] = {
         "cd",
@@ -27,13 +29,25 @@ int (*builtin_func[4])(char **) = {
         &my_sh_exit
 };
 
+char *my_sh_path_history() {
+    char *path = (char *) malloc(strlen(home) + strlen(HISTORY_FILE) + 1);
+
+    strcpy(path, home);
+    strcat(path, "/");
+    strcat(path, HISTORY_FILE);
+
+    return path;
+}
+
 int my_sh_num_builtins() {
     return sizeof(builtin_str) / sizeof(char *);
 }
 
 int my_sh_cd(char **args) {
     if (args[1] == NULL) {
-        fprintf(stderr, "my_shell: expected argument to \"cd\"\n");
+        if (chdir(home) != 0) {
+            perror("my_shell");
+        }
     } else {
         if (chdir(args[1]) != 0) {
             perror("my_shell");
@@ -62,25 +76,35 @@ int my_sh_exit() {
 
 void save_history(char *line) {
     char *end_ptr = 0;
+    char *path = my_sh_path_history();
 
-    int fd = (int) strtol(HISTORY_FILE, &end_ptr, 10);
+    int fd = (int) strtol(path, &end_ptr, 10);
 
     if (*(end_ptr + 1) != '\0') {
-        fd = open(HISTORY_FILE, O_WRONLY | O_APPEND | O_CREAT, 0600);
+        fd = open(path, O_WRONLY | O_APPEND | O_CREAT, 0600);
     }
 
     write(fd, line, strlen(line));
     close(fd);
+    free(path);
 }
 
 char **get_history() {
-    FILE *arch;
     char buffer[1024];
+    char *path = my_sh_path_history();
 
-    arch = fopen(HISTORY_FILE, "r");
-    fread(buffer, sizeof(char), 1024, arch);
-    fclose(arch);
+    char *end_ptr = 0;
 
+    int fd = (int) strtol(path, &end_ptr, 10);
+
+    if (*(end_ptr + 1) != '\0') {
+        fd = open(path, O_RDONLY);
+    }
+
+    read(fd,buffer,1024);
+    close(fd);
+
+    free(path);
     char **args = my_sh_split_line(buffer, "\n");
 
     return args;
@@ -94,10 +118,9 @@ int show_history() {
     for (i = 0; args[i] != NULL; i++) {
     }
 
-    i--;
     int top = i < 10 ? 0 : i - 10;
-    for (int j = i - 1; j >= top; j--) {
-        printf("%d: %s\n", i - j, args[j]);
+    for (int j = top; j < i; j++) {
+        printf("%d: %s\n", j-top+1, args[j]);
     }
 
     free(args);
