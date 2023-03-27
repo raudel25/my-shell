@@ -13,6 +13,8 @@
 
 #define HISTORY_FILE ".my_sh_history"
 
+char *variables[26];
+
 char *home = NULL;
 
 char *builtin_str[4] = {
@@ -154,4 +156,24 @@ char *get_again(int ind) {
     free(args);
 
     return again;
+}
+
+void my_sh_init_variables() {
+    for (int i = 0; i < 26; i++) {
+        variables[i] = NULL;
+    }
+    variables[0]= malloc(64);
+    variables[1]= malloc(64);
+    strcpy(variables[1],"raudel");
+    strcpy(variables[0],"hola");
+}
+
+int check_variable(char *variable){
+    if (strlen(variable) != 1 || variable[0] - 'a' < 0 || variable[0] - 'a' > 'z'){
+        printf("my_sh: the variables must by letters of english alphabet\n");
+
+        return 0;
+    }
+
+    return 1;
 }

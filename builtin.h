@@ -7,6 +7,8 @@
 
 #endif //SHELL_BUILTIN_H
 
+extern char *variables[26];
+
 extern char *home;
 
 extern char *builtin_str[4];
@@ -20,6 +22,10 @@ int my_sh_help();
 int my_sh_exit();
 
 int my_sh_num_builtins();
+
+void my_sh_init_variables();
+
+int check_variable(char *variable);
 
 void save_history(char *line);
 

@@ -69,6 +69,35 @@ int redirect_in(char *fileName) {
     return fd;
 }
 
+int get_execute(char *variable) {
+    if (variable == NULL) {
+        for (int i = 0; i < 26; i++) {
+            if (variables[i] != NULL) {
+                printf("%c = ", (char) (i + 'a'));
+                printf("%s\n", variables[i]);
+            }
+        }
+
+        return 1;
+    }
+
+    if (check_variable(variable)) {
+        for (int i = 0; i < 26; i++) {
+            if (i != variable[0] - 'a')
+                continue;
+
+            if (variables[i] != NULL) {
+                printf("%c = ", (char) (i + 'a'));
+                printf("%s\n", variables[i]);
+
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
+
 int my_sh_launch(char **args, int fd_in, int fd_out, int fd_next) {
     pid_t pid;
     int status;
@@ -83,6 +112,10 @@ int my_sh_launch(char **args, int fd_in, int fd_out, int fd_next) {
         if (fd_out != -1) {
             dup2(fd_out, STDOUT_FILENO);
             close(fd_out);
+        }
+
+        if (strcmp(args[0], "get") == 0) {
+            exit(get_execute(args[1]));
         }
 
         if (execvp(args[0], args) == -1) {
@@ -162,8 +195,50 @@ void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
 
 }
 
-int my_sh_execute(char *new_line, int save) {
+int my_sh_command_again(char **args) {
     int status = 1;
+
+    int q = 0;
+    if (args[1] != NULL) {
+        if (strlen(args[1]) == 1 && args[1][0] - '0' > 0 && args[1][0] - '0' < 10) q = args[1][0] - '0';
+        if (strcmp(args[1], "10") == 0) q = 10;
+    }
+
+    char *c_again = get_again(q);
+
+    if (q != 0 && c_again != NULL) {
+        status = my_sh_execute(c_again, 1);
+    } else
+        printf("my_sh: incorrect command again\n");
+
+    free(c_again);
+
+    return status;
+}
+
+int my_sh_command_set(char **args) {
+    int status = 1;
+
+    if (args[1] != NULL && args[2] != NULL) {
+        if (check_variable(args[1])) {
+            if (variables[args[1][0] - 'a'] != NULL) {
+                free(variables[args[1][0] - 'a']);
+            }
+            if (args[2][0] != '`') {
+                variables[args[1][0] - 'a'] = (char *) malloc(strlen(args[2]));
+                strcpy(variables[args[1][0] - 'a'], args[2]);
+            } else {
+
+            }
+        }
+    } else
+        printf("my_sh: incorrect command set\n");
+
+    return status;
+}
+
+int my_sh_execute(char *new_line, int save) {
+    int status;
     char *aux = (char *) malloc(strlen(new_line));
     strcpy(aux, new_line);
 
@@ -173,20 +248,9 @@ int my_sh_execute(char *new_line, int save) {
         return 1;
 
     if (strcmp(args[0], "again") == 0) {
-        int q = 0;
-        if (args[1] != NULL) {
-            if (strlen(args[1]) == 1 && args[1][0] - '0' > 0 && args[1][0] - '0' < 10) q = args[1][0] - '0';
-            if (strcmp(args[1], "10") == 0) q = 10;
-        }
-
-        char *c_again = get_again(q);
-
-        if (q != 0 && c_again != NULL) {
-            status = my_sh_execute(c_again,1);
-        } else
-            printf("my_sh: incorrect command again\n");
-
-        free(c_again);
+        status = my_sh_command_again(args);
+    } else if (strcmp(args[0], "set") == 0) {
+        status = my_sh_command_set(args);
     } else {
         if (save) save_history(aux);
 
