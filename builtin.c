@@ -162,10 +162,6 @@ void my_sh_init_variables() {
     for (int i = 0; i < 26; i++) {
         variables[i] = NULL;
     }
-    variables[0]= malloc(64);
-    variables[1]= malloc(64);
-    strcpy(variables[1],"raudel");
-    strcpy(variables[0],"hola");
 }
 
 int check_variable(char *variable){

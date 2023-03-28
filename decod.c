@@ -8,7 +8,7 @@
 
 #include "decod.h"
 
-#define MY_SH_TOK_BUF_SIZE 64
+#define MY_SH_TOK_BUF_SIZE 1024
 
 char *my_sh_read_line() {
     char *line = NULL;
@@ -109,6 +109,34 @@ char *eliminate_first(char *line) {
     int i;
     for (i = 0; i < strlen(line) - 1; i++) {
         new_line[i] = line[i + 1];
+    }
+    new_line[i] = 0;
+
+    return new_line;
+}
+
+char *determinate_set_command(char *line) {
+    int i;
+    int l = -1;
+    int r = -1;
+    int find = 0;
+    for (i = 0; i < strlen(line); i++) {
+        if (line[i] == '`' && find) {
+            r = i - 1;
+            break;
+        }
+        if (line[i] == '`') {
+            l = i + 1;
+            find = 1;
+        }
+    }
+
+    if (l > r || l == -1 || r == -1) return NULL;
+
+    char *new_line = (char *) malloc(r - l + 1);
+
+    for (i = 0; i < r - l + 1; i++) {
+        new_line[i] = line[l + i];
     }
     new_line[i] = 0;
 

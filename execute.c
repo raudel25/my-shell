@@ -216,7 +216,7 @@ int my_sh_command_again(char **args) {
     return status;
 }
 
-int my_sh_command_set(char **args) {
+int my_sh_command_set(char **args, char *new_line) {
     int status = 1;
 
     if (args[1] != NULL && args[2] != NULL) {
@@ -228,7 +228,42 @@ int my_sh_command_set(char **args) {
                 variables[args[1][0] - 'a'] = (char *) malloc(strlen(args[2]));
                 strcpy(variables[args[1][0] - 'a'], args[2]);
             } else {
+                char *new_command = determinate_set_command(new_line);
 
+                if (new_command != NULL) {
+                    char *new_command_format = my_sh_decod_line(new_command);
+
+                    int fd[2];
+                    pipe(fd);
+
+                    pid_t pid;
+
+                    pid = fork();
+                    if (pid == 0) {
+                        dup2(fd[1], STDOUT_FILENO);
+                        close(fd[1]);
+                        close(fd[0]);
+
+                        my_sh_execute(new_command_format, 1);
+                        exit(EXIT_FAILURE);
+                    } else if (pid > 0) {
+                        do {
+                            waitpid(pid, &status, WUNTRACED);
+                        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+                    }
+                    char buffer[1024];
+
+                    close(fd[1]);
+                    read(fd[0], buffer, 1024);
+
+                    variables[args[1][0] - 'a'] = (char *) malloc(strlen(buffer));
+                    strcpy(variables[args[1][0] - 'a'], buffer);
+
+                    free(new_command);
+                    free(new_command_format);
+                } else {
+                    printf("my_sh: incorrect command set\n");
+                }
             }
         }
     } else
@@ -250,7 +285,7 @@ int my_sh_execute(char *new_line, int save) {
     if (strcmp(args[0], "again") == 0) {
         status = my_sh_command_again(args);
     } else if (strcmp(args[0], "set") == 0) {
-        status = my_sh_command_set(args);
+        status = my_sh_command_set(args, aux);
     } else {
         if (save) save_history(aux);
 
