@@ -12,6 +12,7 @@
 #include "decod.h"
 
 #define HISTORY_FILE ".my_sh_history"
+#define MY_SH_TOK_BUF_SIZE 1024
 
 char *variables[26];
 
@@ -93,7 +94,7 @@ void save_history(char *line) {
 }
 
 char **get_history() {
-    char buffer[1024];
+    char *buffer=(char *) malloc(MY_SH_TOK_BUF_SIZE);
     char *path = my_sh_path_history();
 
     char *end_ptr = 0;
@@ -104,7 +105,7 @@ char **get_history() {
         fd = open(path, O_RDONLY);
     }
 
-    read(fd,buffer,1024);
+    read(fd,buffer,MY_SH_TOK_BUF_SIZE);
     close(fd);
 
     free(path);
@@ -166,7 +167,7 @@ void my_sh_init_variables() {
 
 int check_variable(char *variable){
     if (strlen(variable) != 1 || variable[0] - 'a' < 0 || variable[0] - 'a' > 'z'){
-        printf("my_sh: the variables must by letters of english alphabet\n");
+        write(2,"my_sh: the variables must by letters of english alphabet\n",57);
 
         return 0;
     }

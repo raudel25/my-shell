@@ -16,26 +16,32 @@ struct List* cloneList(struct List* original){
 	for (int i = 0; i < original->len; ++i) {
 		list->array[i] = original->array[i];
 	}
-	return list;
+    return list;
 }
 
-void append(struct List* list, int value){
-	if (list->len == list->capacity){
-		list->capacity *= 2;
-		list->array = realloc(list->array,list->capacity * sizeof(int));
-	}
-	list->array[list->len++] = value;
+void append(struct List *list, int value) {
+    if (list->len == list->capacity) {
+        list->capacity *= 2;
+        list->array = realloc(list->array, list->capacity * sizeof(int));
+    }
+    list->array[list->len++] = value;
 }
 
-int getValueAtIndex(struct List* list,int index){
-	if (index >= list->len || index < 0){
-		return INT_MIN;
-	}
-	return list->array[index];
+void clear(struct List *list) {
+    list->capacity = 32;
+    list->len = 0;
+    list->array = realloc(list->array, list->capacity * sizeof(int));
 }
 
-int setValueAtIndex(struct List* list,int index, int value){
-	if (index >= list->len || index < 0){
+int getValueAtIndex(struct List *list, int index) {
+    if (index >= list->len || index < 0) {
+        return INT_MIN;
+    }
+    return list->array[index];
+}
+
+int setValueAtIndex(struct List *list, int index, int value) {
+    if (index >= list->len || index < 0) {
 		return INT_MIN;
 	}
 	list->array[index] = value;

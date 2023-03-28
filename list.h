@@ -17,6 +17,8 @@ struct List* cloneList(struct List* original);
 
 void append(struct List* list, int value);
 
+void clear(struct List *list);
+
 int getValueAtIndex(struct List* list,int index);
 
 int setValueAtIndex(struct List* list,int index, int value);

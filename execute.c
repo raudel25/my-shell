@@ -74,10 +74,12 @@ int get_execute(char *variable) {
         for (int i = 0; i < 26; i++) {
             if (variables[i] != NULL) {
                 printf("%c = ", (char) (i + 'a'));
-                printf("%s\n", variables[i]);
+                printf("%s", variables[i]);
+                if (variables[i][strlen(variables[i]) - 1] != '\n') printf("\n");
             }
         }
 
+        printf("%c",0);
         return 1;
     }
 
@@ -87,14 +89,17 @@ int get_execute(char *variable) {
                 continue;
 
             if (variables[i] != NULL) {
-                printf("%c = ", (char) (i + 'a'));
-                printf("%s\n", variables[i]);
-
+                printf("%s", variables[i]);
+                if (variables[i][strlen(variables[i]) - 1] != '\n') printf("\n");
+                printf("%c",0);
                 return 1;
             }
         }
+
+        write(2, "my_sh: variable not found\n", 26);
     }
 
+    printf("%c",0);
     return 0;
 }
 
@@ -141,6 +146,8 @@ int my_sh_launch(char **args, int fd_in, int fd_out, int fd_next) {
                     waitpid(c_pid, &status, WUNTRACED);
                 } while (!WIFEXITED(status) && !WIFSIGNALED(status));
             }
+
+            clear(pid_history);
         }
     }
 
@@ -251,14 +258,16 @@ int my_sh_command_set(char **args, char *new_line) {
                             waitpid(pid, &status, WUNTRACED);
                         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
                     }
-                    char buffer[1024];
+                    char *buffer = (char *) malloc(1024);
 
                     close(fd[1]);
                     read(fd[0], buffer, 1024);
+                    close(fd[0]);
 
                     variables[args[1][0] - 'a'] = (char *) malloc(strlen(buffer));
                     strcpy(variables[args[1][0] - 'a'], buffer);
 
+                    free(buffer);
                     free(new_command);
                     free(new_command_format);
                 } else {
@@ -321,7 +330,7 @@ int my_sh_execute_args(char **args) {
             new_args[i - init] = (char *) malloc(strlen(args[i]));
             strcpy(new_args[i-init],args[i]);
         }
-        new_args[end] = NULL;
+        new_args[end - init] = NULL;
 
         result = my_sh_launch(new_args, fd[0], fd[1], fd[2]);
         free(new_args);
