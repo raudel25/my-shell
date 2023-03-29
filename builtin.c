@@ -18,17 +18,19 @@ char *variables[26];
 
 char *home = NULL;
 
-char *builtin_str[4] = {
+char *builtin_str[5] = {
         "cd",
         "help",
         "history",
+        "unset",
         "exit"
 };
 
-int (*builtin_func[4])(char **) = {
+int (*builtin_func[5])(char **) = {
         &my_sh_cd,
         &my_sh_help,
-        &show_history,
+        &my_sh_history,
+        &my_sh_unset,
         &my_sh_exit
 };
 
@@ -114,17 +116,17 @@ char **get_history() {
     return args;
 }
 
-int show_history() {
+int my_sh_history() {
     char **args = get_history();
 
     int i;
     for (i = 0; args[i] != NULL; i++) {
-        if(args[i][0]!='#') break;
+        if (args[i][0] != '#') break;
     }
 
     int top = i < 10 ? 0 : i - 10;
     for (int j = top; j < i; j++) {
-        char *aux= eliminate_first(args[j]);
+        char *aux = eliminate_first(args[j]);
         printf("%d: %s\n", j - top + 1, aux);
         free(aux);
     }
@@ -165,12 +167,27 @@ void my_sh_init_variables() {
     }
 }
 
-int check_variable(char *variable){
-    if (strlen(variable) != 1 || variable[0] - 'a' < 0 || variable[0] - 'a' > 'z'){
-        write(2,"my_sh: the variables must by letters of english alphabet\n",57);
+int check_variable(char *variable) {
+    if (strlen(variable) != 1 || variable[0] - 'a' < 0 || variable[0] - 'a' > 'z') {
+        write(2, "my_sh: the variables must by letters of english alphabet\n", 57);
 
         return 0;
     }
+
+    return 1;
+}
+
+int my_sh_unset(char **args) {
+    if (args[1] != NULL) {
+        if (check_variable(args[1])) {
+            if (variables[args[1][0] - 'a'] != NULL) {
+                free(variables[args[1][0] - 'a']);
+                variables[args[1][0] - 'a'] = NULL;
+            } else
+                printf("my_sh: incorrect command unset\n");
+        }
+    } else
+        printf("my_sh: incorrect command unset\n");
 
     return 1;
 }

@@ -202,7 +202,7 @@ void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
 
 }
 
-int my_sh_command_again(char **args) {
+int my_sh_again(char **args) {
     int status = 1;
 
     int q = 0;
@@ -223,7 +223,7 @@ int my_sh_command_again(char **args) {
     return status;
 }
 
-int my_sh_command_set(char **args, char *new_line) {
+int my_sh_set(char **args, char *new_line) {
     int status = 1;
 
     if (args[1] != NULL && args[2] != NULL) {
@@ -251,7 +251,7 @@ int my_sh_command_set(char **args, char *new_line) {
                         close(fd[1]);
                         close(fd[0]);
 
-                        my_sh_execute(new_command_format, 1);
+                        my_sh_execute(new_command_format, 0);
                         exit(EXIT_FAILURE);
                     } else if (pid > 0) {
                         do {
@@ -281,6 +281,11 @@ int my_sh_command_set(char **args, char *new_line) {
     return status;
 }
 
+void my_sh_execute_save(char **args, char *line, int save) {
+    if (strcmp(args[0], "exit") == 0 || strcmp(args[0], "again") == 0) save = 0;
+    if (save) save_history(line);
+}
+
 int my_sh_execute(char *new_line, int save) {
     int status;
     char *aux = (char *) malloc(strlen(new_line));
@@ -288,16 +293,31 @@ int my_sh_execute(char *new_line, int save) {
 
     char **args = my_sh_split_line(new_line, MY_SH_TOK_DELIM);
 
-    if (args[0] == NULL)
+    if (args[0] == NULL) {
+        free(aux);
+        free(args);
+
         return 1;
+    }
+
+    my_sh_execute_save(args, aux, save);
+
+    for (int i = 0; i < my_sh_num_builtins(); i++) {
+        if (strcmp(args[0], builtin_str[i]) == 0) {
+            status = (*builtin_func[i])(args);
+
+            free(aux);
+            free(args);
+
+            return status;
+        }
+    }
 
     if (strcmp(args[0], "again") == 0) {
-        status = my_sh_command_again(args);
+        status = my_sh_again(args);
     } else if (strcmp(args[0], "set") == 0) {
-        status = my_sh_command_set(args, aux);
+        status = my_sh_set(args, aux);
     } else {
-        if (save) save_history(aux);
-
         status = my_sh_execute_args(args);
     }
 
@@ -308,12 +328,6 @@ int my_sh_execute(char *new_line, int save) {
 }
 
 int my_sh_execute_args(char **args) {
-    for (int i = 0; i < my_sh_num_builtins(); i++) {
-        if (strcmp(args[0], builtin_str[i]) == 0) {
-            return (*builtin_func[i])(args);
-        }
-    }
-
     int fd[3];
     fd[2] = -1;
     int aux[2];
