@@ -28,9 +28,11 @@ void append(struct List *list, int value) {
 }
 
 void clear(struct List *list) {
-    list->capacity = 32;
+    if (list->capacity != 32) {
+        list->capacity = 32;
+        list->array = realloc(list->array, list->capacity * sizeof(int));
+    }
     list->len = 0;
-    list->array = realloc(list->array, list->capacity * sizeof(int));
 }
 
 int getValueAtIndex(struct List *list, int index) {
@@ -42,21 +44,21 @@ int getValueAtIndex(struct List *list, int index) {
 
 int setValueAtIndex(struct List *list, int index, int value) {
     if (index >= list->len || index < 0) {
-		return INT_MIN;
-	}
-	list->array[index] = value;
-	return 0;
+        return INT_MIN;
+    }
+    list->array[index] = value;
+    return 0;
 }
 
-int removeAtIndex(struct List* list,int index){
-	if (index >= list->len || index < 0){
-		return INT_MIN;
-	}
-	for (int i = index; i < list->len - 1; ++i) {
-		list->array[i] = list->array[i + 1];
-	}
-	list->len--;
-	return 0;
+int removeAtIndex(struct List *list, int index) {
+    if (index >= list->len || index < 0) {
+        return INT_MIN;
+    }
+    for (int i = index; i < list->len - 1; ++i) {
+        list->array[i] = list->array[i + 1];
+    }
+    list->len--;
+    return 0;
 }
 
 int addAtIndex(struct List* list, int index, int value){
