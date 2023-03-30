@@ -16,3 +16,7 @@ char *my_sh_decod_line(char *line);
 char *sub_str(char *line, int init, int end);
 
 char *determinate_set_command(char *line);
+
+char *array_to_str(char **args);
+
+int array_size(char **args);

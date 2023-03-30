@@ -90,16 +90,6 @@ char *my_sh_decod_line(char *line) {
         aux_line[j++] = line[i];
     }
 
-    int find = 0;
-    int y = aux_line[j - 1] == '\n' ? j - 2 : j - 1;
-
-    while (aux_line[y] == '&') {
-        find = 1;
-        y--;
-    }
-
-    if (find) j = y + 2;
-
     char *new_line = (char *) malloc(j + 1);
 
     for (int x = 0; x < j; x++) {
@@ -151,4 +141,30 @@ char *determinate_set_command(char *line) {
     new_line[i] = 0;
 
     return new_line;
+}
+
+char *array_to_str(char **args) {
+    char *line = (char *) malloc(sizeof(args));
+
+    int i;
+    int x = 0;
+    for (i = 0; args[i] != NULL; i++) {
+        for (int j = 0; j < strlen(args[i]); j++) {
+            line[x++] = args[i][j];
+        }
+        line[x++] = ' ';
+    }
+
+    line[x - 1] = '\n';
+    line[x] = 0;
+
+    return line;
+}
+
+int array_size(char **args) {
+    int i;
+
+    for (i = 0; args[i] != NULL; i++);
+
+    return i;
 }

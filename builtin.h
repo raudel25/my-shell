@@ -18,9 +18,13 @@ extern char *variables[26];
 
 extern char *home;
 
-extern char *builtin_str[7];
+extern char *builtin_str[4];
 
-extern int (*builtin_func[7])(char **);
+extern int (*builtin_func[4])(char **);
+
+extern char *builtin_str_out[4];
+
+extern int (*builtin_func_out[4])(char **);
 
 int my_sh_cd(char **args);
 
@@ -29,6 +33,8 @@ int my_sh_help();
 int my_sh_exit();
 
 int my_sh_num_builtins();
+
+int my_sh_num_builtins_out();
 
 void my_sh_init_variables();
 
@@ -47,3 +53,5 @@ int my_sh_unset(char **args);
 int my_sh_foreground(char **args);
 
 int my_sh_jobs();
+
+int my_sh_get(char **args);

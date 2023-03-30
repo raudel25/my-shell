@@ -41,7 +41,7 @@ _Noreturn void my_sh_loop() {
         char *new_line = my_sh_decod_line(line);
         int save=line[0]!=' ';
 
-        my_sh_execute(new_line,save);
+        my_sh_execute(new_line, save, 1);
 
         free(line);
         free(new_line);

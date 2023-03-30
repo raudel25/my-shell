@@ -23,25 +23,34 @@ char *variables[26];
 
 char *home = NULL;
 
-char *builtin_str[7] = {
+char *builtin_str[4] = {
         "cd",
-        "help",
-        "history",
         "unset",
         "fg",
-        "jobs",
         "exit"
 };
 
-int (*builtin_func[7])(char **) = {
+char *builtin_str_out[4] = {
+        "help",
+        "history",
+        "jobs",
+        "get"
+};
+
+int (*builtin_func[4])(char **) = {
         &my_sh_cd,
-        &my_sh_help,
-        &my_sh_history,
         &my_sh_unset,
         &my_sh_foreground,
-        &my_sh_jobs,
         &my_sh_exit
 };
+
+int (*builtin_func_out[4])(char **) = {
+        &my_sh_help,
+        &my_sh_history,
+        &my_sh_jobs,
+        &my_sh_get
+};
+
 
 char *my_sh_path_history() {
     char *path = (char *) malloc(strlen(home) + strlen(HISTORY_FILE) + 1);
@@ -57,21 +66,26 @@ int my_sh_num_builtins() {
     return sizeof(builtin_str) / sizeof(char *);
 }
 
+int my_sh_num_builtins_out() {
+    return sizeof(builtin_str) / sizeof(char *);
+}
+
+
 int my_sh_cd(char **args) {
     if (args[1] == NULL) {
         if (chdir(home) != 0) {
             perror("my_shell");
 
-            return 0;
+            return 1;
         }
     } else {
         if (chdir(args[1]) != 0) {
             perror("my_shell");
 
-            return 0;
+            return 1;
         }
     }
-    return 1;
+    return 0;
 }
 
 int my_sh_help() {
@@ -85,7 +99,7 @@ int my_sh_help() {
     }
 
     printf("Use the man command for information on other programs.\n");
-    return 1;
+    return 0;
 }
 
 int my_sh_exit() {
@@ -146,7 +160,7 @@ int my_sh_history() {
 
     free(args);
 
-    return 1;
+    return 0;
 }
 
 char *get_again(int ind) {
@@ -182,7 +196,7 @@ void my_sh_init_variables() {
 
 int check_variable(char *variable) {
     if (strlen(variable) != 1 || variable[0] - 'a' < 0 || variable[0] - 'a' > 'z') {
-        write(2, "my_sh: the variables must by letters of english alphabet\n", 57);
+        fprintf(stderr, "my_sh: the variables must by letters of english alphabet\n");
 
         return 0;
     }
@@ -197,30 +211,34 @@ int my_sh_unset(char **args) {
                 free(variables[args[1][0] - 'a']);
                 variables[args[1][0] - 'a'] = NULL;
             } else {
-                printf("my_sh: incorrect command unset\n");
+                fprintf(stderr, "my_sh: incorrect command unset\n");
 
-                return 0;
+                return 1;
             }
         }
     } else {
-        printf("my_sh: incorrect command unset\n");
+        fprintf(stderr, "my_sh: incorrect command unset\n");
 
-        return 0;
+        return 1;
     }
 
-    return 1;
+    return 0;
 }
 
 int my_sh_foreground(char **args) {
-    if (background_pid->len == 0)
+    if (background_pid->len == 0) {
+        fprintf(stderr, "my_sh: the process does not exist in the background");
         return 1;
+    }
 
     int c_pid;
     int status = 1;
 
     int index = args[1] == NULL ? background_pid->len - 1 : (int) strtol(args[1], 0, 10) - 1;
-    if (index >= background_pid->len)
+    if (index >= background_pid->len) {
+        fprintf(stderr, "my_sh: the process does not exist in the background");
         return 1;
+    }
 
     c_pid = background_pid->array[index];
     do {
@@ -236,6 +254,39 @@ int my_sh_foreground(char **args) {
 int my_sh_jobs() {
     for (int i = 0; i < background_pid->len; i++) {
         printf("[%d]\t%s\t%d\n", i + 1, (char *) background_command->array[i], background_pid->array[i]);
+    }
+
+    return 0;
+}
+
+int my_sh_get(char **args) {
+    if (args[1] == NULL) {
+        for (int i = 0; i < 26; i++) {
+            if (variables[i] != NULL) {
+                printf("%c = %s", (char) (i + 'a'), variables[i]);
+                if (variables[i][strlen(variables[i]) - 1] != '\n') printf("\n");
+            }
+        }
+        printf("%c", 0);
+
+        return 0;
+    }
+
+    if (check_variable(args[1])) {
+        for (int i = 0; i < 26; i++) {
+            if (i != args[1][0] - 'a')
+                continue;
+
+            if (variables[i] != NULL) {
+                printf("%s", variables[i]);
+                if (variables[i][strlen(variables[i]) - 1] != '\n') printf("\n");
+                printf("%c", 0);
+
+                return 0;
+            }
+        }
+
+        fprintf(stderr, "my_sh: variable not found\n");
     }
 
     return 1;
