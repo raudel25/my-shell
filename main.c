@@ -8,6 +8,7 @@
 #include "execute.h"
 #include "list.h"
 #include "builtin.h"
+#include "glist.h"
 
 #define BOLD_CYAN "\033[1;36m"
 #define WHITE "\033[0m"
@@ -51,6 +52,7 @@ void my_sh_loop() {
 int main() {
     pid_history = createList();
     background_pid = createList();
+    background_command = createListG();
     my_sh_init_variables();
 
     my_sh_loop();

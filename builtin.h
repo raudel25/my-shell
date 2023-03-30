@@ -8,16 +8,19 @@
 #endif //SHELL_BUILTIN_H
 
 #include "list.h"
+#include "glist.h"
 
 extern List* background_pid;
+
+extern GList* background_command;
 
 extern char *variables[26];
 
 extern char *home;
 
-extern char *builtin_str[5];
+extern char *builtin_str[7];
 
-extern int (*builtin_func[5])(char **);
+extern int (*builtin_func[7])(char **);
 
 int my_sh_cd(char **args);
 
@@ -40,3 +43,7 @@ char **get_history();
 char *get_again(int ind);
 
 int my_sh_unset(char **args);
+
+int my_sh_foreground(char **args);
+
+int my_sh_jobs();

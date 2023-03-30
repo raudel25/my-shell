@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <sys/wait.h>
 
 #include "builtin.h"
 #include "decod.h"
@@ -16,23 +17,29 @@
 
 List *background_pid = NULL;
 
+GList *background_command = NULL;
+
 char *variables[26];
 
 char *home = NULL;
 
-char *builtin_str[5] = {
+char *builtin_str[7] = {
         "cd",
         "help",
         "history",
         "unset",
+        "fg",
+        "jobs",
         "exit"
 };
 
-int (*builtin_func[5])(char **) = {
+int (*builtin_func[7])(char **) = {
         &my_sh_cd,
         &my_sh_help,
         &my_sh_history,
         &my_sh_unset,
+        &my_sh_foreground,
+        &my_sh_jobs,
         &my_sh_exit
 };
 
@@ -190,6 +197,36 @@ int my_sh_unset(char **args) {
         }
     } else
         printf("my_sh: incorrect command unset\n");
+
+    return 1;
+}
+
+int my_sh_foreground(char **args) {
+    if (background_pid->len == 0)
+        return 1;
+
+    int c_pid;
+    int status;
+
+    int index = args[1] == NULL ? background_pid->len - 1 : (int) strtol(args[1], 0, 10) - 1;
+    if (index >= background_pid->len)
+        return 1;
+
+    c_pid = background_pid->array[index];
+    do {
+        waitpid(c_pid, &status, WUNTRACED);
+    } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+
+    removeAtIndex(background_pid, index);
+    removeAtIndexG(background_command, index);
+
+    return 1;
+}
+
+int my_sh_jobs() {
+    for (int i = 0; i < background_pid->len; i++) {
+        printf("[%d]\t%s\t%d\n", i + 1, (char *) background_command->array[i], background_pid->array[i]);
+    }
 
     return 1;
 }
