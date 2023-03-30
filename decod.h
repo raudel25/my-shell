@@ -13,6 +13,6 @@ char **my_sh_split_line(char *line,char *split);
 
 char *my_sh_decod_line(char *line);
 
-char *eliminate_first(char *line);
+char *sub_str(char *line, int init, int end);
 
 char *determinate_set_command(char *line);

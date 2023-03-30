@@ -7,6 +7,10 @@
 
 #endif //SHELL_BUILTIN_H
 
+#include "list.h"
+
+extern List* background_pid;
+
 extern char *variables[26];
 
 extern char *home;

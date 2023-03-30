@@ -50,6 +50,7 @@ void my_sh_loop() {
 
 int main() {
     pid_history = createList();
+    background_pid = createList();
     my_sh_init_variables();
 
     my_sh_loop();

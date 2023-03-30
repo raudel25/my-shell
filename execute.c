@@ -17,6 +17,8 @@
 
 List *pid_history = NULL;
 
+int null_entry;
+
 int redirect_instr(char *args) {
     if (strcmp(args, "<") == 0)
         return 0;
@@ -200,6 +202,11 @@ void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
         fd[2] = fd1[0];
     }
 
+    if (null_entry) {
+
+        fd[0] = redirect_in("/dev/null");
+    }
+
 }
 
 int my_sh_again(char **args) {
@@ -281,6 +288,32 @@ int my_sh_set(char **args, char *new_line) {
     return status;
 }
 
+int my_sh_background(char *new_line) {
+    int pid;
+
+    pid = fork();
+    if (pid == 0) {
+        setpgid(0, 0);
+
+        char *aux = sub_str(new_line, 0, (int) strlen(new_line) - 4);
+        my_sh_execute(aux, 0);
+
+        char *new_aux = (char *) malloc(strlen(aux) + 1);
+        strcpy(new_aux, aux);
+        strcat(new_aux, "\n");
+
+        free(aux);
+        free(new_aux);
+        exit(EXIT_FAILURE);
+    } else if (pid > 0) {
+        setpgid(pid, pid);
+        append(background_pid, pid);
+        printf("[%d]\t%d\n", background_pid->len, pid);
+    }
+
+    return 1;
+}
+
 void my_sh_execute_save(char **args, char *line, int save) {
     if (strcmp(args[0], "exit") == 0 || strcmp(args[0], "again") == 0) save = 0;
     if (save) save_history(line);
@@ -317,6 +350,8 @@ int my_sh_execute(char *new_line, int save) {
         status = my_sh_again(args);
     } else if (strcmp(args[0], "set") == 0) {
         status = my_sh_set(args, aux);
+    } else if (aux[strlen(aux) - 2] == '&') {
+        status = my_sh_background(aux);
     } else {
         status = my_sh_execute_args(args);
     }

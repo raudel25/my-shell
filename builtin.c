@@ -14,6 +14,8 @@
 #define HISTORY_FILE ".my_sh_history"
 #define MY_SH_TOK_BUF_SIZE 1024
 
+List *background_pid = NULL;
+
 char *variables[26];
 
 char *home = NULL;
@@ -126,7 +128,7 @@ int my_sh_history() {
 
     int top = i < 10 ? 0 : i - 10;
     for (int j = top; j < i; j++) {
-        char *aux = eliminate_first(args[j]);
+        char *aux = sub_str(args[j], 1, (int) strlen(args[j]) - 1);
         printf("%d: %s\n", j - top + 1, aux);
         free(aux);
     }
@@ -148,7 +150,7 @@ char *get_again(int ind) {
     int top = i < 10 ? 0 : i - 10;
     for (int j = top; j < i; j++) {
         if (ind == j - top + 1) {
-            char *aux= eliminate_first(args[j]);
+            char *aux = sub_str(args[j], 1, (int) strlen(args[j]) - 1);
             again = (char *) malloc(strlen(aux) + 1);
             strcpy(again, aux);
             strcat(again, "\n");
