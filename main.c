@@ -22,9 +22,8 @@ void head_shell(char *name) {
     printf("%smy_shell@%s:%s%s$ %s", BOLD_RED, name, BOLD_CYAN, cwd, WHITE);
 }
 
-void my_sh_loop() {
+_Noreturn void my_sh_loop() {
     char *line;
-    int status;
 
     struct passwd *pw;
     uid_t uid;
@@ -42,11 +41,11 @@ void my_sh_loop() {
         char *new_line = my_sh_decod_line(line);
         int save=line[0]!=' ';
 
-        status= my_sh_execute(new_line,save);
+        my_sh_execute(new_line,save);
 
         free(line);
         free(new_line);
-    } while (status);
+    } while (1);
 }
 
 int main() {
@@ -56,9 +55,4 @@ int main() {
     my_sh_init_variables();
 
     my_sh_loop();
-
-    free(home);
-    free(pid_history);
-
-    return 0;
 }

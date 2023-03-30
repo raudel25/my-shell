@@ -61,10 +61,14 @@ int my_sh_cd(char **args) {
     if (args[1] == NULL) {
         if (chdir(home) != 0) {
             perror("my_shell");
+
+            return 0;
         }
     } else {
         if (chdir(args[1]) != 0) {
             perror("my_shell");
+
+            return 0;
         }
     }
     return 1;
@@ -85,7 +89,7 @@ int my_sh_help() {
 }
 
 int my_sh_exit() {
-    return 0;
+    exit(EXIT_SUCCESS);
 }
 
 void save_history(char *line) {
@@ -192,11 +196,17 @@ int my_sh_unset(char **args) {
             if (variables[args[1][0] - 'a'] != NULL) {
                 free(variables[args[1][0] - 'a']);
                 variables[args[1][0] - 'a'] = NULL;
-            } else
+            } else {
                 printf("my_sh: incorrect command unset\n");
+
+                return 0;
+            }
         }
-    } else
+    } else {
         printf("my_sh: incorrect command unset\n");
+
+        return 0;
+    }
 
     return 1;
 }
@@ -206,7 +216,7 @@ int my_sh_foreground(char **args) {
         return 1;
 
     int c_pid;
-    int status;
+    int status = 1;
 
     int index = args[1] == NULL ? background_pid->len - 1 : (int) strtol(args[1], 0, 10) - 1;
     if (index >= background_pid->len)
@@ -220,7 +230,7 @@ int my_sh_foreground(char **args) {
     removeAtIndex(background_pid, index);
     removeAtIndexG(background_command, index);
 
-    return 1;
+    return status;
 }
 
 int my_sh_jobs() {

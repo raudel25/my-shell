@@ -106,7 +106,7 @@ int get_execute(char *variable) {
 
 int my_sh_launch(char **args, int fd_in, int fd_out, int fd_next) {
     pid_t pid;
-    int status;
+    int status = 1;
 
     pid = fork();
     if (pid == 0) {
@@ -152,7 +152,7 @@ int my_sh_launch(char **args, int fd_in, int fd_out, int fd_next) {
         }
     }
 
-    return 1;
+    return status;
 }
 
 void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
@@ -324,7 +324,7 @@ int my_sh_execute(char *new_line, int save) {
         free(aux);
         free(args);
 
-        return 1;
+        return 0;
     }
 
     my_sh_execute_save(args, aux, save);
