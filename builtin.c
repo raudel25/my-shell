@@ -14,6 +14,7 @@
 
 #define HISTORY_FILE ".my_sh_history"
 #define MY_SH_TOK_BUF_SIZE 1024
+#define MY_SH_MAX_HISTORY 10
 
 List *background_pid = NULL;
 
@@ -113,17 +114,41 @@ void save_history(char *line) {
     int fd = (int) strtol(path, &end_ptr, 10);
 
     if (*(end_ptr + 1) != '\0') {
-        fd = open(path, O_WRONLY | O_APPEND | O_CREAT, 0600);
+        fd = open(path, O_RDONLY);
     }
 
-    write(fd, "#", 1);
-    write(fd, line, strlen(line));
+    char *buffer = (char *) malloc(MY_SH_TOK_BUF_SIZE);
+    read(fd, buffer, MY_SH_TOK_BUF_SIZE);
     close(fd);
+
+    if (*(end_ptr + 1) != '\0') {
+        fd = open(path, O_WRONLY | O_TRUNC | O_CREAT, 0600);
+    }
+
+    char *aux = (char *) malloc(3 * MY_SH_TOK_BUF_SIZE);
+    strcpy(aux, "#");
+    strcat(aux, line);
+    strcat(aux, buffer);
+
+    int j = 0;
+    int i;
+    for (i = 0; i < strlen(aux); i++) {
+        if (aux[i] == '\n') j++;
+        if (j == MY_SH_MAX_HISTORY) break;
+    }
+
+    if (j == MY_SH_MAX_HISTORY) aux[i + 1] = 0;
+
+    write(fd, aux, strlen(aux));
+    close(fd);
+
+    free(buffer);
+    free(aux);
     free(path);
 }
 
 char **get_history() {
-    char *buffer=(char *) malloc(MY_SH_TOK_BUF_SIZE);
+    char *buffer = (char *) malloc(MY_SH_TOK_BUF_SIZE);
     char *path = my_sh_path_history();
 
     char *end_ptr = 0;
@@ -134,7 +159,7 @@ char **get_history() {
         fd = open(path, O_RDONLY);
     }
 
-    read(fd,buffer,MY_SH_TOK_BUF_SIZE);
+    read(fd, buffer, MY_SH_TOK_BUF_SIZE);
     close(fd);
 
     free(path);
@@ -151,10 +176,10 @@ int my_sh_history() {
         if (args[i][0] != '#') break;
     }
 
-    int top = i < 10 ? 0 : i - 10;
-    for (int j = top; j < i; j++) {
-        char *aux = sub_str(args[j], 1, (int) strlen(args[j]) - 1);
-        printf("%d: %s\n", j - top + 1, aux);
+    int top = i < MY_SH_MAX_HISTORY ? i : MY_SH_MAX_HISTORY;
+    for (int j = 0; j < top; j++) {
+        char *aux = sub_str(args[top - 1 - j], 1, (int) strlen(args[top - 1 - j]) - 1);
+        printf("%d: %s\n", j + 1, aux);
         free(aux);
     }
 
@@ -163,19 +188,21 @@ int my_sh_history() {
     return 0;
 }
 
-char *get_again(int ind) {
+char *get_again(int ind, int last) {
     char **args = get_history();
     char *again = NULL;
 
+    if (last) ind = MY_SH_MAX_HISTORY;
+
     int i;
     for (i = 0; args[i] != NULL; i++) {
-        if(args[i][0]!='#') break;
+        if (args[i][0] != '#') break;
     }
 
-    int top = i < 10 ? 0 : i - 10;
-    for (int j = top; j < i; j++) {
-        if (ind == j - top + 1) {
-            char *aux = sub_str(args[j], 1, (int) strlen(args[j]) - 1);
+    int top = i < MY_SH_MAX_HISTORY ? i : MY_SH_MAX_HISTORY;
+    for (int j = 0; j < top; j++) {
+        if (ind == j + 1) {
+            char *aux = sub_str(args[top - 1 - j], 1, (int) strlen(args[top - 1 - j]) - 1);
             again = (char *) malloc(strlen(aux) + 1);
             strcpy(again, aux);
             strcat(again, "\n");

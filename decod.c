@@ -26,10 +26,9 @@ char *my_sh_read_line() {
     return line;
 }
 
-char **my_sh_split_line(char *line,char *split)
-{
+char **my_sh_split_line(char *line, char *split) {
     int buf_size = MY_SH_TOK_BUF_SIZE, position = 0;
-    char **tokens = malloc(buf_size * sizeof(char*));
+    char **tokens = malloc(buf_size * sizeof(char *));
     char *token;
 
     if (!tokens) {
@@ -44,7 +43,7 @@ char **my_sh_split_line(char *line,char *split)
 
         if (position >= buf_size) {
             buf_size += MY_SH_TOK_BUF_SIZE;
-            tokens = realloc(tokens, buf_size * sizeof(char*));
+            tokens = realloc(tokens, buf_size * sizeof(char *));
             if (!tokens) {
                 fprintf(stderr, "my_sh: allocation error\n");
                 exit(EXIT_FAILURE);

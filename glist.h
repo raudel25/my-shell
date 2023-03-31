@@ -7,11 +7,11 @@
 
 #include <stdlib.h>
 
-typedef struct GList{
+typedef struct GList {
     int len;
     unsigned capacity;
-    void** array;
-}GList;
+    void **array;
+} GList;
 
 struct GList *createListG();
 

@@ -32,14 +32,14 @@ _Noreturn void my_sh_loop() {
     pw = getpwuid(uid);
 
     home = (char *) malloc(strlen(pw->pw_dir));
-    strcpy(home,pw->pw_dir);
+    strcpy(home, pw->pw_dir);
 
     do {
         head_shell(pw->pw_name);
         line = my_sh_read_line();
 
         char *new_line = my_sh_decod_line(line);
-        int save=line[0]!=' ';
+        int save = line[0] != ' ';
 
         my_sh_execute(new_line, save, 1);
 

@@ -10,9 +10,9 @@
 #include "list.h"
 #include "glist.h"
 
-extern List* background_pid;
+extern List *background_pid;
 
-extern GList* background_command;
+extern GList *background_command;
 
 extern char *variables[26];
 
@@ -46,7 +46,7 @@ int my_sh_history();
 
 char **get_history();
 
-char *get_again(int ind);
+char *get_again(int ind, int last);
 
 int my_sh_unset(char **args);
 

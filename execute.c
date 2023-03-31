@@ -117,10 +117,10 @@ int my_sh_launch(char **args, int fd_in, int fd_out, int fd_next) {
     } else {
         append(pid_history, pid);
 
-        if (fd_in != -1){
+        if (fd_in != -1) {
             close(fd_in);
         }
-        if (fd_out != -1){
+        if (fd_out != -1) {
             close(fd_out);
         }
 
@@ -188,19 +188,20 @@ void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
 
 int my_sh_again(char **args) {
     int status = 0;
-
     int q = 0;
+    int last = 0;
+
     if (args[1] != NULL) {
-        if (strlen(args[1]) == 1 && args[1][0] - '0' > 0 && args[1][0] - '0' < 10) q = args[1][0] - '0';
-        if (strcmp(args[1], "10") == 0) q = 10;
-    }
+        char *p;
+        q = (int) strtol(args[1], &p, 10);
+    } else last = 1;
 
-    char *c_again = get_again(q);
+    char *c_again = get_again(q, last);
 
-    if (q != 0 && c_again != NULL) {
+    if (c_again != NULL) {
         status = my_sh_execute(c_again, 1, 1);
     } else
-        fprintf(stderr,"my_sh: incorrect command again\n");
+        fprintf(stderr, "my_sh: incorrect command again\n");
 
     free(c_again);
 
