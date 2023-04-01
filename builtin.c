@@ -254,7 +254,7 @@ int my_sh_unset(char **args) {
 
 int my_sh_foreground(char **args) {
     if (background_pid->len == 0) {
-        fprintf(stderr, "my_sh: the process does not exist in the background");
+        fprintf(stderr, "my_sh: the process does not exist in the background\n");
         return 1;
     }
 
@@ -263,7 +263,7 @@ int my_sh_foreground(char **args) {
 
     int index = args[1] == NULL ? background_pid->len - 1 : (int) strtol(args[1], 0, 10) - 1;
     if (index >= background_pid->len) {
-        fprintf(stderr, "my_sh: the process does not exist in the background");
+        fprintf(stderr, "my_sh: the process does not exist in the background\n");
         return 1;
     }
 

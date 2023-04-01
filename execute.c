@@ -237,8 +237,7 @@ int my_sh_set(char **args) {
                         close(fd[1]);
                         close(fd[0]);
 
-                        my_sh_execute(new_command_format, 0, 1);
-                        exit(EXIT_FAILURE);
+                        exit(my_sh_execute(new_command_format, 0, 1));
                     } else if (pid > 0) {
                         do {
                             waitpid(pid, &status, WUNTRACED);
@@ -247,7 +246,18 @@ int my_sh_set(char **args) {
                     char *buffer = (char *) malloc(1024);
 
                     close(fd[1]);
-                    read(fd[0], buffer, 1024);
+
+                    char c;
+                    int i = 0;
+
+                    while (read(fd[0],&c,1) > 0){
+                        buffer[i] = c;
+                        i++;
+                    }
+                    buffer[i] = 0;
+                    if (buffer[i - 1] == '\n')
+                        buffer[i - 1] = 0;
+
                     close(fd[0]);
 
                     variables[args[1][0] - 'a'] = (char *) malloc(strlen(buffer));
@@ -282,9 +292,7 @@ int my_sh_background(char **args) {
     if (pid == 0) {
         setpgid(0, 0);
 
-        my_sh_execute(aux, 0, 0);
-
-        exit(EXIT_FAILURE);
+        exit(my_sh_execute(aux, 0, 0));
     } else if (pid > 0) {
         setpgid(pid, pid);
         append(background_pid, pid);

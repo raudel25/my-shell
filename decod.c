@@ -132,18 +132,11 @@ char *determinate_set_command(char *line) {
 
     if (l > r || l == -1 || r == -1) return NULL;
 
-    char *new_line = (char *) malloc(r - l + 1);
-
-    for (i = 0; i < r - l + 1; i++) {
-        new_line[i] = line[l + i];
-    }
-    new_line[i] = 0;
-
-    return new_line;
+    return sub_str(line, l, r);
 }
 
 char *array_to_str(char **args) {
-    char *line = (char *) malloc(sizeof(args));
+    char *line = (char *) malloc(MY_SH_TOK_BUF_SIZE);
 
     int i;
     int x = 0;
