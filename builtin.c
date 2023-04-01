@@ -192,14 +192,14 @@ char *get_again(int ind, int last) {
     char **args = get_history();
     char *again = NULL;
 
-    if (last) ind = MY_SH_MAX_HISTORY;
-
     int i;
     for (i = 0; args[i] != NULL; i++) {
         if (args[i][0] != '#') break;
     }
 
     int top = i < MY_SH_MAX_HISTORY ? i : MY_SH_MAX_HISTORY;
+    if (last) ind = top;
+
     for (int j = 0; j < top; j++) {
         if (ind == j + 1) {
             char *aux = sub_str(args[top - 1 - j], 1, (int) strlen(args[top - 1 - j]) - 1);
@@ -294,7 +294,6 @@ int my_sh_get(char **args) {
                 if (variables[i][strlen(variables[i]) - 1] != '\n') printf("\n");
             }
         }
-        printf("%c", 0);
 
         return 0;
     }
@@ -307,7 +306,6 @@ int my_sh_get(char **args) {
             if (variables[i] != NULL) {
                 printf("%s", variables[i]);
                 if (variables[i][strlen(variables[i]) - 1] != '\n') printf("\n");
-                printf("%c", 0);
 
                 return 0;
             }

@@ -18,19 +18,6 @@
 
 List *pid_history = NULL;
 
-char *builtin_str_exc[2] = {
-        "again",
-        "set"
-};
-
-int (*builtin_func_exc[2])(char **) = {
-        &my_sh_again,
-        &my_sh_set
-};
-
-int my_sh_num_builtins_exc() {
-    return sizeof(builtin_str_exc) / sizeof(char *);
-}
 
 
 int redirect_instr(char *args) {
@@ -187,7 +174,7 @@ void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
 }
 
 int my_sh_again(char **args) {
-    int status = 0;
+    int status = 1;
     int q = 0;
     int last = 0;
 
@@ -208,8 +195,7 @@ int my_sh_again(char **args) {
     return status;
 }
 
-int my_sh_set(char **args) {
-    char *new_line = array_to_str(args);
+int my_sh_set(char **args, char *line) {
     int status = 0;
 
     if (args[1] != NULL && args[2] != NULL) {
@@ -221,7 +207,7 @@ int my_sh_set(char **args) {
                 variables[args[1][0] - 'a'] = (char *) malloc(strlen(args[2]));
                 strcpy(variables[args[1][0] - 'a'], args[2]);
             } else {
-                char *new_command = determinate_set_command(new_line);
+                char *new_command = determinate_set_command(line);
 
                 if (new_command != NULL) {
                     char *new_command_format = my_sh_decod_line(new_command);
@@ -250,18 +236,23 @@ int my_sh_set(char **args) {
                     char c;
                     int i = 0;
 
-                    while (read(fd[0],&c,1) > 0){
+                    while (read(fd[0], &c, 1) > 0) {
                         buffer[i] = c;
                         i++;
                     }
-                    buffer[i] = 0;
-                    if (buffer[i - 1] == '\n')
-                        buffer[i - 1] = 0;
 
                     close(fd[0]);
 
-                    variables[args[1][0] - 'a'] = (char *) malloc(strlen(buffer));
-                    strcpy(variables[args[1][0] - 'a'], buffer);
+                    if (i != 0) {
+                        buffer[i] = 0;
+                        if (buffer[i - 1] == '\n')
+                            buffer[i - 1] = 0;
+                        variables[args[1][0] - 'a'] = (char *) malloc(strlen(buffer));
+                        strcpy(variables[args[1][0] - 'a'], buffer);
+                    } else {
+                        fprintf(stderr, "my_sh: the output of the command is null\n");
+                        status = 1;
+                    }
 
                     free(buffer);
                     free(new_command);
@@ -271,13 +262,13 @@ int my_sh_set(char **args) {
                     status = 1;
                 }
             }
+        } else {
+            status = 1;
         }
     } else {
         fprintf(stderr, "my_sh: incorrect command set\n");
         status = 1;
     }
-
-    free(new_line);
 
     return status;
 }
@@ -313,38 +304,38 @@ void my_sh_execute_save(char **args, char *line, int save) {
 
 int my_sh_execute(char *new_line, int save, int possible_back) {
     int status;
-    char *aux = (char *) malloc(strlen(new_line));
-    strcpy(aux, new_line);
+    char *copy = (char *) malloc(strlen(new_line));
+    strcpy(copy, new_line);
 
     char **args = my_sh_split_line(new_line, MY_SH_TOK_DELIM);
 
     if (args[0] == NULL) {
-        free(aux);
+        free(copy);
         free(args);
 
         return 1;
     }
 
+    my_sh_execute_save(args, copy, save);
+
     if (strcmp(args[array_size(args) - 1], "&") == 0 && possible_back) {
         int q = my_sh_background(args);
 
-        free(aux);
+        free(copy);
         free(args);
 
         return q;
     }
 
-    my_sh_execute_save(args, aux, save);
+    status = my_sh_execute_args(args, copy);
 
-    status = my_sh_execute_args(args);
-
-    free(aux);
+    free(copy);
     free(args);
 
     return status;
 }
 
-int my_sh_execute_args(char **args) {
+int my_sh_execute_args(char **args, char *line) {
     int fd[3];
     fd[2] = -1;
     int aux[2];
@@ -357,11 +348,10 @@ int my_sh_execute_args(char **args) {
         }
     }
 
-    for (int i = 0; i < my_sh_num_builtins_exc(); i++) {
-        if (strcmp(args[0], builtin_str_exc[i]) == 0) {
-            return (*builtin_func_exc[i])(args);
-        }
-    }
+    if (strcmp(args[0], "again") == 0)
+        return my_sh_again(args);
+    if (strcmp(args[0], "set") == 0)
+        return my_sh_set(args, line);
 
     while (1) {
         my_sh_new_args(init, args, fd[2], fd, aux);

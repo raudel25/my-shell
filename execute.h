@@ -11,18 +11,12 @@
 
 extern List *pid_history;
 
-extern char *builtin_str_exc[2];
-
-extern int (*builtin_func_exc[2])(char **);
-
-int my_sh_num_builtins_exc();
-
 int my_sh_execute(char *new_line, int save, int possible_back);
 
-int my_sh_execute_args(char **args);
+int my_sh_execute_args(char **args, char *line);
 
 int my_sh_background(char **args);
 
-int my_sh_set(char **args);
+int my_sh_set(char **args, char *line);
 
 int my_sh_again(char **args);
