@@ -377,6 +377,75 @@ int my_sh_execute_chain(char **args, char *line) {
     return global_status;
 }
 
+int my_sh_conditional(char **args, char *line) {
+    int p = 0;
+
+    int ind_then = -1;
+    int ind_else = -1;
+    int ind_end;
+
+    int error = 0;
+
+    char *c_condition;
+    char *c_then;
+    char *c_else;
+
+    int i;
+    int j;
+    for (i = 1; args[i] != NULL; i++) {
+        if (strcmp(args[i], "if") == 0) p++;
+        if (strcmp(args[i], "end") == 0) p--;
+        if (strcmp(args[i], "then") == 0 && p == 0) ind_then = i;
+        if (strcmp(args[i], "else") == 0 && p == 0) ind_else = i;
+    }
+
+    ind_end = i - 1;
+    if (strcmp(args[ind_end], "end") != 0 || ind_then == -1) error = 1;
+    if (ind_then < 2 || ind_end - ind_then < 2) error = 1;
+    if (ind_else != -1 && (ind_else - ind_then < 2 || ind_end - ind_else < 2)) error = 1;
+
+    if (error) {
+        fprintf(stderr, "my_sh: incorrect conditional\n");
+        return 1;
+    }
+
+    int size_total = 3;
+
+    j = 0;
+    for (i = 1; i < ind_then; i++) {
+        j += ((int) strlen(args[i]) + 1);
+    }
+    c_condition = sub_str(line, size_total, j + size_total - 2);
+    size_total += (j + 5);
+
+    if (ind_else != -1) {
+        j = 0;
+        for (i = ind_then + 1; i < ind_else; i++) {
+            j += ((int) strlen(args[i]) + 1);
+        }
+        c_then = sub_str(line, size_total, j + size_total - 2);
+        size_total += (j + 5);
+
+        j = 0;
+        for (i = ind_else + 1; i < ind_end; i++) {
+            j += ((int) strlen(args[i]) + 1);
+        }
+        c_else = sub_str(line, size_total, j + size_total - 2);
+    } else {
+        j = 0;
+        for (i = ind_then + 1; i < ind_end; i++) {
+            j += ((int) strlen(args[i]) + 1);
+        }
+        c_then = sub_str(line, size_total, j + size_total - 2);
+    }
+
+    int status = !my_sh_execute(c_condition, 0, 0);
+
+    if (status) my_sh_execute(c_then, 0, 0);
+    else if (ind_else != -1) my_sh_execute(c_else, 0, 0);
+
+    return 0;
+}
 
 int my_sh_execute(char *new_line, int save, int possible_back) {
     int status;
@@ -396,6 +465,15 @@ int my_sh_execute(char *new_line, int save, int possible_back) {
 
     if (strcmp(args[array_size(args) - 1], "&") == 0 && possible_back) {
         int q = my_sh_background(args);
+
+        free(copy);
+        free(args);
+
+        return q;
+    }
+
+    if (strcmp(args[0], "if") == 0) {
+        int q = my_sh_conditional(args, copy);
 
         free(copy);
         free(args);
