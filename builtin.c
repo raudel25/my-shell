@@ -17,6 +17,7 @@
 #define ERROR "\033[1;31mmy_sh\033[0m"
 
 #define HISTORY_FILE ".my_sh_history"
+#define HELP_PATH "help/"
 #define MY_SH_TOK_BUF_SIZE 1024
 #define MY_SH_MAX_HISTORY 10
 
@@ -27,6 +28,30 @@ GList *background_command = NULL;
 char *variables[26];
 
 char *home = NULL;
+
+char *commands[15] = {
+        "cd",
+        "exit",
+        "pipes",
+        "background",
+        "jobs",
+        "fg",
+        "history",
+        "again",
+        "chain",
+        "true",
+        "false",
+        "conditional",
+        "get",
+        "set",
+        "unset"
+};
+
+char *commands_help[14];
+
+int num_commands() {
+    return sizeof(commands) / sizeof(char *);
+}
 
 char *builtin_str[6] = {
         "cd",
@@ -97,18 +122,26 @@ int my_sh_cd(char **args) {
     return 0;
 }
 
-int my_sh_help() {
-    int i;
-    printf("Stephen Brennan's my_sh\n");
-    printf("Type program names and arguments, and hit enter.\n");
-    printf("The following are built in:\n");
+int my_sh_help(char **args) {
+    if (args[1] == NULL) {
+        printf("\n%smy_shell%s: Raudel Alejandro Gomez Molina\n\nComandos y Funcionalidades\n\n", BOLD_BLUE, RESET);
 
-    for (i = 0; i < my_sh_num_builtins(); i++) {
-        printf("  %s\n", builtin_str[i]);
+        for (int i = 0; i < num_commands(); i++) {
+            printf("%s%s%s: %s\n", BOLD_BLUE, commands[i], RESET, commands_help[i]);
+        }
+        return 0;
     }
 
-    printf("Use the man command for information on other programs.\n");
-    return 0;
+    for (int i = 0; i < num_commands(); i++) {
+        if (strcmp(commands[i], args[1]) == 0) {
+            printf("%s", commands_help[i]);
+            return 0;
+        }
+    }
+
+    fprintf(stderr, "%s: command not found\n", ERROR);
+
+    return 1;
 }
 
 int my_sh_exit() {
@@ -325,10 +358,32 @@ int my_sh_get(char **args) {
     return 1;
 }
 
-int my_sh_true(){
+int my_sh_true() {
     return 0;
 }
 
-int my_sh_false(){
+int my_sh_false() {
     return 1;
+}
+
+void load_help() {
+    for (int i = 0; i < num_commands(); ++i) {
+        char *path = malloc(64);
+        strcpy(path, HELP_PATH);
+        strcat(path, commands[i]);
+        strcat(path, ".txt");
+
+        char *end_ptr = 0;
+        int fd = (int) strtol(path, &end_ptr, 10);
+
+        if (*(end_ptr + 1) != '\0') {
+            fd = open(path, O_RDONLY);
+        }
+
+        commands_help[i] = malloc(MY_SH_TOK_BUF_SIZE);
+        read(fd, commands_help[i], MY_SH_TOK_BUF_SIZE);
+
+        close(fd);
+        free(path);
+    }
 }

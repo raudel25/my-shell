@@ -28,7 +28,7 @@ extern int (*builtin_func_out[4])(char **);
 
 int my_sh_cd(char **args);
 
-int my_sh_help();
+int my_sh_help(char **args);
 
 int my_sh_exit();
 
@@ -59,3 +59,5 @@ int my_sh_get(char **args);
 int my_sh_true();
 
 int my_sh_false();
+
+void load_help();
