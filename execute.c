@@ -393,14 +393,14 @@ int my_sh_conditional(char **args, char *line) {
     int i;
     int j;
     for (i = 1; args[i] != NULL; i++) {
-        if (strcmp(args[i], "if") == 0) p++;
-        if (strcmp(args[i], "end") == 0) p--;
         if (strcmp(args[i], "then") == 0 && p == 0) ind_then = i;
         if (strcmp(args[i], "else") == 0 && p == 0) ind_else = i;
+        if (strcmp(args[i], "end") == 0 && p == 0) ind_end = i;
+        if (strcmp(args[i], "if") == 0) p++;
+        if (strcmp(args[i], "end") == 0) p--;
     }
 
-    ind_end = i - 1;
-    if (strcmp(args[ind_end], "end") != 0 || ind_then == -1) error = 1;
+    if (ind_end != i - 1 || ind_then == -1) error = 1;
     if (ind_then < 2 || ind_end - ind_then < 2) error = 1;
     if (ind_else != -1 && (ind_else - ind_then < 2 || ind_end - ind_else < 2)) error = 1;
 
