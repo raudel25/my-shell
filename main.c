@@ -11,7 +11,7 @@
 #include "glist.h"
 
 #define BOLD_CYAN "\033[1;36m"
-#define WHITE "\033[0m"
+#define RESET "\033[0m"
 #define BOLD_RED "\033[1;31m"
 
 #define MY_SH_TOK_DELIM " \t\r\n\a"
@@ -19,7 +19,7 @@
 void head_shell(char *name) {
     char cwd[1024];
     getcwd(cwd, sizeof(cwd));
-    printf("%smy_shell@%s:%s%s$ %s", BOLD_RED, name, BOLD_CYAN, cwd, WHITE);
+    printf("%smy_sh@%s:%s%s$ %s", BOLD_RED, name, BOLD_CYAN, cwd, RESET);
 }
 
 _Noreturn void my_sh_loop() {

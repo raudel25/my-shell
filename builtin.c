@@ -12,6 +12,10 @@
 #include "builtin.h"
 #include "decod.h"
 
+#define BOLD_BLUE "\033[1;34m"
+#define RESET "\033[0m"
+#define ERROR "\033[1;31mmy_sh\033[0m"
+
 #define HISTORY_FILE ".my_sh_history"
 #define MY_SH_TOK_BUF_SIZE 1024
 #define MY_SH_MAX_HISTORY 10
@@ -79,13 +83,13 @@ int my_sh_num_builtins_out() {
 int my_sh_cd(char **args) {
     if (args[1] == NULL) {
         if (chdir(home) != 0) {
-            perror("my_shell");
+            perror(ERROR);
 
             return 1;
         }
     } else {
         if (chdir(args[1]) != 0) {
-            perror("my_shell");
+            perror(ERROR);
 
             return 1;
         }
@@ -227,7 +231,7 @@ void my_sh_init_variables() {
 
 int check_variable(char *variable) {
     if (strlen(variable) != 1 || variable[0] - 'a' < 0 || variable[0] - 'a' > 'z') {
-        fprintf(stderr, "my_sh: the variables must by letters of english alphabet\n");
+        fprintf(stderr, "%s: the variables must by letters of english alphabet\n",ERROR);
 
         return 0;
     }
@@ -242,13 +246,13 @@ int my_sh_unset(char **args) {
                 free(variables[args[1][0] - 'a']);
                 variables[args[1][0] - 'a'] = NULL;
             } else {
-                fprintf(stderr, "my_sh: incorrect command unset\n");
+                fprintf(stderr, "%s: incorrect command unset\n",ERROR);
 
                 return 1;
             }
         }
     } else {
-        fprintf(stderr, "my_sh: incorrect command unset\n");
+        fprintf(stderr, "%s: incorrect command unset\n",ERROR);
 
         return 1;
     }
@@ -258,7 +262,7 @@ int my_sh_unset(char **args) {
 
 int my_sh_foreground(char **args) {
     if (background_pid->len == 0) {
-        fprintf(stderr, "my_sh: the process does not exist in the background\n");
+        fprintf(stderr, "%s: the process does not exist in the background\n",ERROR);
         return 1;
     }
 
@@ -267,7 +271,7 @@ int my_sh_foreground(char **args) {
 
     int index = args[1] == NULL ? background_pid->len - 1 : (int) strtol(args[1], 0, 10) - 1;
     if (index >= background_pid->len) {
-        fprintf(stderr, "my_sh: the process does not exist in the background\n");
+        fprintf(stderr, "%s: the process does not exist in the background\n",ERROR);
         return 1;
     }
 
@@ -294,7 +298,7 @@ int my_sh_get(char **args) {
     if (args[1] == NULL) {
         for (int i = 0; i < 26; i++) {
             if (variables[i] != NULL) {
-                printf("%c = %s", (char) (i + 'a'), variables[i]);
+                printf("%s%c%s = %s", BOLD_BLUE, (char) (i + 'a'), RESET, variables[i]);
                 if (variables[i][strlen(variables[i]) - 1] != '\n') printf("\n");
             }
         }
@@ -315,7 +319,7 @@ int my_sh_get(char **args) {
             }
         }
 
-        fprintf(stderr, "my_sh: variable not found\n");
+        fprintf(stderr, "%s: variable not found\n",ERROR);
     }
 
     return 1;

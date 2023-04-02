@@ -15,10 +15,10 @@
 #include "glist.h"
 
 #define MY_SH_TOK_DELIM " \t\r\n\a"
+#define ERROR "\033[1;31mmy_sh\033[0m"
+
 
 List *pid_history = NULL;
-
-
 
 int redirect_instr(char *args) {
     if (strcmp(args, "<") == 0)
@@ -88,7 +88,7 @@ int my_sh_launch(char **args, int init, int end, int fd_in, int fd_out, int fd_n
             close(fd_out);
         }
 
-        char **new_args = (char **) malloc((end - init) * sizeof(char *));
+        char *new_args[end - init];
 
         for (int i = init; i < end; i++) {
             new_args[i - init] = args[i];
@@ -102,13 +102,12 @@ int my_sh_launch(char **args, int init, int end, int fd_in, int fd_out, int fd_n
         }
 
         if (execvp(new_args[0], new_args) == -1) {
-            free(new_args);
-            perror("my_shell");
+            perror(ERROR);
         }
 
         exit(EXIT_FAILURE);
     } else if (pid < 0) {
-        perror("my_shell");
+        perror(ERROR);
     } else {
         append(pid_history, pid);
 
@@ -196,7 +195,7 @@ int my_sh_again(char **args) {
     if (c_again != NULL) {
         status = my_sh_execute(c_again, 1, 1);
     } else
-        fprintf(stderr, "my_sh: incorrect command again\n");
+        fprintf(stderr, "%s: incorrect command again\n", ERROR);
 
     free(c_again);
 
@@ -258,7 +257,7 @@ int my_sh_set(char **args, char *line) {
                         variables[args[1][0] - 'a'] = (char *) malloc(strlen(buffer));
                         strcpy(variables[args[1][0] - 'a'], buffer);
                     } else {
-                        fprintf(stderr, "my_sh: the output of the command is null\n");
+                        fprintf(stderr, "%s: the output of the command is null\n", ERROR);
                         status = 1;
                     }
 
@@ -266,7 +265,7 @@ int my_sh_set(char **args, char *line) {
                     free(new_command);
                     free(new_command_format);
                 } else {
-                    fprintf(stderr, "my_sh: incorrect command set\n");
+                    fprintf(stderr, "%s: incorrect command set\n", ERROR);
                     status = 1;
                 }
             }
@@ -274,16 +273,17 @@ int my_sh_set(char **args, char *line) {
             status = 1;
         }
     } else {
-        fprintf(stderr, "my_sh: incorrect command set\n");
+        fprintf(stderr, "%s: incorrect command set\n", ERROR);
         status = 1;
     }
 
     return status;
 }
 
-int my_sh_background(char **args) {
-    char *new_line = array_to_str(args);
-    char *aux = sub_str(new_line, 0, (int) strlen(new_line) - 4);
+int my_sh_background(char *line) {
+    char *new_line = sub_str(line, 0, (int) strlen(line) - 4);
+    char *copy = malloc(strlen(new_line));
+    strcpy(copy, new_line);
 
     int pid;
 
@@ -291,16 +291,13 @@ int my_sh_background(char **args) {
     if (pid == 0) {
         setpgid(0, 0);
 
-        exit(my_sh_execute(aux, 0, 0));
+        exit(my_sh_execute(new_line, 0, 0));
     } else if (pid > 0) {
         setpgid(pid, pid);
         append(background_pid, pid);
-        appendG(background_command, aux);
+        appendG(background_command, new_line);
         printf("[%d]\t%d\n", background_pid->len, pid);
     }
-
-    free(aux);
-    free(new_line);
 
     return 0;
 }
@@ -405,7 +402,7 @@ int my_sh_conditional(char **args, char *line) {
     if (ind_else != -1 && (ind_else - ind_then < 2 || ind_end - ind_else < 2)) error = 1;
 
     if (error) {
-        fprintf(stderr, "my_sh: incorrect conditional\n");
+        fprintf(stderr, "%s: incorrect conditional\n", ERROR);
         return 1;
     }
 
@@ -464,7 +461,7 @@ int my_sh_execute(char *new_line, int save, int possible_back) {
     my_sh_execute_save(args, copy, save);
 
     if (strcmp(args[array_size(args) - 1], "&") == 0 && possible_back) {
-        int q = my_sh_background(args);
+        int q = my_sh_background(copy);
 
         free(copy);
         free(args);
