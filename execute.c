@@ -72,7 +72,7 @@ int redirect_in(char *fileName) {
     return fd;
 }
 
-int my_sh_launch(char **args, int fd_in, int fd_out, int fd_next) {
+int my_sh_launch(char **args, int init, int end, int fd_in, int fd_out, int fd_next) {
     pid_t pid;
     int status = 0;
 
@@ -88,13 +88,21 @@ int my_sh_launch(char **args, int fd_in, int fd_out, int fd_next) {
             close(fd_out);
         }
 
+        char **new_args = (char **) malloc((end - init) * sizeof(char *));
+
+        for (int i = init; i < end; i++) {
+            new_args[i - init] = args[i];
+        }
+        new_args[end - init] = NULL;
+
         for (int i = 0; i < my_sh_num_builtins_out(); i++) {
-            if (strcmp(args[0], builtin_str_out[i]) == 0) {
-                exit((*builtin_func_out[i])(args));
+            if (strcmp(new_args[0], builtin_str_out[i]) == 0) {
+                exit((*builtin_func_out[i])(new_args));
             }
         }
 
-        if (execvp(args[0], args) == -1) {
+        if (execvp(new_args[0], new_args) == -1) {
+            free(new_args);
             perror("my_shell");
         }
 
@@ -357,16 +365,7 @@ int my_sh_execute_args(char **args, char *line) {
         my_sh_new_args(init, args, fd[2], fd, aux);
         int end = aux[0];
 
-        char **new_args = (char **) malloc((end - init) * sizeof(char *));
-
-        for (int i = init; i < end; i++) {
-            new_args[i - init] = (char *) malloc(strlen(args[i]));
-            strcpy(new_args[i - init], args[i]);
-        }
-        new_args[end - init] = NULL;
-
-        result = my_sh_launch(new_args, fd[0], fd[1], fd[2]);
-        free(new_args);
+        result = my_sh_launch(args, init, end, fd[0], fd[1], fd[2]);
 
         init = aux[1];
         if (args[end] == NULL || args[init] == NULL)

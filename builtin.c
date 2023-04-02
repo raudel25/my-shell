@@ -24,11 +24,13 @@ char *variables[26];
 
 char *home = NULL;
 
-char *builtin_str[4] = {
+char *builtin_str[6] = {
         "cd",
         "unset",
         "fg",
-        "exit"
+        "exit",
+        "true",
+        "false"
 };
 
 char *builtin_str_out[4] = {
@@ -38,11 +40,13 @@ char *builtin_str_out[4] = {
         "get"
 };
 
-int (*builtin_func[4])(char **) = {
+int (*builtin_func[6])(char **) = {
         &my_sh_cd,
         &my_sh_unset,
         &my_sh_foreground,
-        &my_sh_exit
+        &my_sh_exit,
+        &my_sh_true,
+        &my_sh_false
 };
 
 int (*builtin_func_out[4])(char **) = {
@@ -314,5 +318,13 @@ int my_sh_get(char **args) {
         fprintf(stderr, "my_sh: variable not found\n");
     }
 
+    return 1;
+}
+
+int my_sh_true(){
+    return 0;
+}
+
+int my_sh_false(){
     return 1;
 }

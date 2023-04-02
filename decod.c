@@ -59,8 +59,9 @@ char **my_sh_split_line(char *line, char *split) {
 char *my_sh_decod_line(char *line) {
     char *aux_line = (char *) malloc(3 * strlen(line));
 
+    int len = (int) strlen(line);
     int j = 0;
-    for (int i = 0; i < strlen(line); i++) {
+    for (int i = 0; i < len; i++) {
         if (line[i] == '#')
             break;
 
@@ -70,15 +71,64 @@ char *my_sh_decod_line(char *line) {
             } else
                 continue;
         }
-        if (line[i] == '<' || line[i] == '>' || line[i] == '|') {
+
+        if (line[i] == '<') {
             if (i != 0) {
-                if (line[i - 1] != ' ' && !(line[i] == '>' && line[i - 1] == '>')) {
+                if (line[i - 1] != ' ') {
+                    aux_line[j++] = ' ';
+                }
+            }
+            aux_line[j++] = line[i];
+            if (i != len - 1) {
+                if (line[i + 1] != ' ') {
+                    aux_line[j++] = ' ';
+                }
+            }
+
+            continue;
+        }
+
+        if (line[i] == '>') {
+            if (i != 0) {
+                if (line[i - 1] != ' ' && line[i - 1] != '>') {
                     aux_line[j++] = ' ';
                 }
             }
             aux_line[j++] = line[i];
             if (i != sizeof(line) - 1) {
-                if (line[i + 1] != ' ' && !(line[i] == '>' && line[i + 1] == '>')) {
+                if (line[i + 1] != ' ' && line[i + 1] != '>') {
+                    aux_line[j++] = ' ';
+                }
+            }
+
+            continue;
+        }
+
+        if (line[i] == '|') {
+            if (i != 0) {
+                if (line[i - 1] != ' ' && line[i - 1] != '|') {
+                    aux_line[j++] = ' ';
+                }
+            }
+            aux_line[j++] = line[i];
+            if (i != len - 1) {
+                if (line[i + 1] != ' ' && line[i + 1] != '|') {
+                    aux_line[j++] = ' ';
+                }
+            }
+
+            continue;
+        }
+
+        if (line[i] == '&') {
+            if (i != len - 1 && i != 0) {
+                if (line[i - 1] != ' ' && line[i + 1] == '&') {
+                    aux_line[j++] = ' ';
+                }
+            }
+            aux_line[j++] = line[i];
+            if (i != 0 && i != len - 1) {
+                if (line[i + 1] != ' ' && line[i - 1] == '&') {
                     aux_line[j++] = ' ';
                 }
             }
