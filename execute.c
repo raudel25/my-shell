@@ -310,6 +310,74 @@ void my_sh_execute_save(char **args, char *line, int save) {
     if (save) save_history(line);
 }
 
+int my_sh_execute_chain(char **args, char *line) {
+    int global_status = -1;
+    int status;
+    int execute = 1;
+
+    int last = 0;
+    int i;
+    int j = 0;
+    for (i = 0; args[i] != NULL; i++) {
+        j += ((int) strlen(args[i]) + 1);
+
+        if (args[i][strlen(args[i]) - 1] == ';') {
+            if (global_status == -1) global_status = 1;
+
+            if (execute) {
+                char *aux = sub_str(line, last, j - 3);
+                status = !my_sh_execute(aux, 0, 0);
+                free(aux);
+            }
+
+            execute = 1;
+            last = j;
+            global_status = status && global_status;
+        }
+
+        if (strcmp(args[i], "&&") == 0) {
+            if (global_status == -1) global_status = 1;
+
+            if (execute) {
+                char *aux = sub_str(line, last, j - 5);
+                status = !my_sh_execute(aux, 0, 0);
+                free(aux);
+
+                execute = status;
+            }
+
+            last = j;
+        }
+
+        if (strcmp(args[i], "||") == 0) {
+            if (global_status == -1) global_status = 1;
+
+            if (execute) {
+                char *aux = sub_str(line, last, j - 5);
+                status = !my_sh_execute(aux, 0, 0);
+                free(aux);
+
+                execute = !status;
+            }
+
+            last = j;
+        }
+    }
+
+    if (global_status != -1) {
+        if (execute && args[i - 1][strlen(args[i - 1]) - 1] != ';') {
+            char *aux = sub_str(line, last, j - 2);
+            status = !my_sh_execute(aux, 0, 0);
+            free(aux);
+        }
+
+        return !(status && global_status);
+    }
+
+    return global_status;
+}
+
+
 int my_sh_execute(char *new_line, int save, int possible_back) {
     int status;
     char *copy = (char *) malloc(strlen(new_line));
@@ -333,6 +401,15 @@ int my_sh_execute(char *new_line, int save, int possible_back) {
         free(args);
 
         return q;
+    }
+
+    int chain = my_sh_execute_chain(args, copy);
+
+    if (chain != -1) {
+        free(copy);
+        free(args);
+
+        return chain;
     }
 
     status = my_sh_execute_args(args, copy);
