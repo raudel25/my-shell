@@ -18,7 +18,7 @@
 #define ERROR "\033[1;31mmy_sh\033[0m"
 
 #define HISTORY_FILE ".my_sh_history"
-#define HELP_PATH "help/"
+#define HELP_PATH "../help/"
 #define MY_SH_TOK_BUF_SIZE 1024
 #define MY_SH_MAX_HISTORY 10
 
@@ -389,6 +389,12 @@ void load_help() {
 
         commands_help[i] = malloc(MY_SH_TOK_BUF_SIZE);
         read(fd, commands_help[i], MY_SH_TOK_BUF_SIZE);
+
+        int j;
+        for (j = 0; commands_help[i][j] != '#'; j++) {
+            if (j == MY_SH_TOK_BUF_SIZE - 1) break;
+        }
+        commands_help[i][j] = 0;
 
         close(fd);
         free(path);
