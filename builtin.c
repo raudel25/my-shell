@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <pwd.h>
 
 #include "builtin.h"
 #include "decod.h"
@@ -21,15 +22,19 @@
 #define MY_SH_TOK_BUF_SIZE 1024
 #define MY_SH_MAX_HISTORY 10
 
+int current_pid;
+
+int last_pid;
+
 List *background_pid = NULL;
 
 GList *background_command = NULL;
 
 char *variables[26];
 
-char *home = NULL;
+struct passwd *pw = NULL;
 
-char *commands[15] = {
+char *commands[16] = {
         "cd",
         "exit",
         "pipes",
@@ -38,6 +43,7 @@ char *commands[15] = {
         "fg",
         "history",
         "again",
+        "ctrl",
         "chain",
         "true",
         "false",
@@ -47,7 +53,7 @@ char *commands[15] = {
         "unset"
 };
 
-char *commands_help[14];
+char *commands_help[16];
 
 int num_commands() {
     return sizeof(commands) / sizeof(char *);
@@ -87,9 +93,9 @@ int (*builtin_func_out[4])(char **) = {
 
 
 char *my_sh_path_history() {
-    char *path = (char *) malloc(strlen(home) + strlen(HISTORY_FILE) + 1);
+    char *path = (char *) malloc(strlen(pw->pw_dir) + strlen(HISTORY_FILE) + 1);
 
-    strcpy(path, home);
+    strcpy(path, pw->pw_dir);
     strcat(path, "/");
     strcat(path, HISTORY_FILE);
 
@@ -107,7 +113,7 @@ int my_sh_num_builtins_out() {
 
 int my_sh_cd(char **args) {
     if (args[1] == NULL) {
-        if (chdir(home) != 0) {
+        if (chdir(pw->pw_dir) != 0) {
             perror(ERROR);
 
             return 1;
@@ -309,6 +315,7 @@ int my_sh_foreground(char **args) {
     }
 
     c_pid = background_pid->array[index];
+    current_pid = c_pid;
     do {
         waitpid(c_pid, &status, WUNTRACED);
     } while (!WIFEXITED(status) && !WIFSIGNALED(status));

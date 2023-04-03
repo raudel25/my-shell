@@ -10,13 +10,17 @@
 #include "list.h"
 #include "glist.h"
 
+extern int current_pid;
+
+extern int last_pid;
+
 extern List *background_pid;
 
 extern GList *background_command;
 
 extern char *variables[26];
 
-extern char *home;
+extern struct passwd *pw;
 
 extern char *builtin_str[6];
 

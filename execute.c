@@ -18,7 +18,7 @@
 #define ERROR "\033[1;31mmy_sh\033[0m"
 
 
-List *pid_history = NULL;
+List *pipes_pid = NULL;
 
 int redirect_instr(char *args) {
     if (strcmp(args, "<") == 0)
@@ -109,7 +109,7 @@ int my_sh_launch(char **args, int init, int end, int fd_in, int fd_out, int fd_n
     } else if (pid < 0) {
         perror(ERROR);
     } else {
-        append(pid_history, pid);
+        append(pipes_pid, pid);
 
         if (fd_in != -1) {
             close(fd_in);
@@ -119,14 +119,15 @@ int my_sh_launch(char **args, int init, int end, int fd_in, int fd_out, int fd_n
         }
 
         if (fd_next == -1) {
-            for (int i = 0; i < pid_history->len; ++i) {
+            for (int i = 0; i < pipes_pid->len; ++i) {
+                current_pid = pipes_pid->array[i];
                 do {
-                    int c_pid = pid_history->array[i];
+                    int c_pid = pipes_pid->array[i];
                     waitpid(c_pid, &status, WUNTRACED);
                 } while (!WIFEXITED(status) && !WIFSIGNALED(status));
             }
 
-            clear(pid_history);
+            clear(pipes_pid);
         }
     }
 

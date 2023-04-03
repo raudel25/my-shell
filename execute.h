@@ -9,7 +9,7 @@
 
 #include "list.h"
 
-extern List *pid_history;
+extern List *pipes_pid;
 
 int my_sh_execute(char *new_line, int save, int possible_back);
 
