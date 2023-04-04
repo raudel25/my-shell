@@ -1,2 +1,12 @@
-aaaa lls
+El comando again <number> ejecuta un comando almecenado en el historial <number> viene dado por el orden en que se ejecutaron los comandos desde 1 para el más viejo hasta 10 para el último, si <number> no se especifica se ejecuta el ultimo comando. Una vez que se ejecuta el comando especificado anteriormente este pasa al historial.
+
+Ejemplo:
+
+my_sh $ history
+1: ls
+2: cd
+3: pwd
+4: history
+my_sh $ again 1 # se ejecuta ls
+my_sh $ again   # se ejecuta ls dado que fue el último comando
 #

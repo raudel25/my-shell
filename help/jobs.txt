@@ -1,2 +1,10 @@
-aa
+El comnado jobs lista todos los procesos que están ocurriendo en el background.
+
+Ejemplo:
+
+my_sh $ cp movie.mkv .. &
+my_sh $ rm file.zip &
+my_sh $ jobs             # lista los 2 comandos anteriores ocurriendo en el background
+[1]     cp movie.mkv ..     1925
+[2]     rm file.zip     1927
 #

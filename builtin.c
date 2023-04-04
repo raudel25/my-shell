@@ -43,7 +43,7 @@ char *commands[16] = {
         "fg",
         "history",
         "again",
-        "ctrl",
+        "ctrl+c",
         "chain",
         "true",
         "false",
@@ -387,12 +387,12 @@ void load_help() {
             fd = open(path, O_RDONLY);
         }
 
-        commands_help[i] = malloc(MY_SH_TOK_BUF_SIZE);
-        read(fd, commands_help[i], MY_SH_TOK_BUF_SIZE);
+        commands_help[i] = malloc(2*MY_SH_TOK_BUF_SIZE);
+        read(fd, commands_help[i], 2*MY_SH_TOK_BUF_SIZE);
 
         int j;
-        for (j = 0; commands_help[i][j] != '#'; j++) {
-            if (j == MY_SH_TOK_BUF_SIZE - 1) break;
+        for (j = 1; !(commands_help[i][j - 1] == '\n' && commands_help[i][j] == '#'); j++) {
+            if (j == 2*MY_SH_TOK_BUF_SIZE - 1) break;
         }
         commands_help[i][j] = 0;
 

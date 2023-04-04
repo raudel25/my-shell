@@ -1,2 +1,2 @@
-a
+El comando false siempre falla al ejecutarse, puede ver detalles de su uso en chain y conditional.
 #

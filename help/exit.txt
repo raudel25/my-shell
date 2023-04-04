@@ -1,2 +1,2 @@
-a
+El comando exit para la ejecución del shell.
 #

@@ -1,2 +1,13 @@
-a
+El comando get <c> muestra el valor de la variable <c> en el sistema. Si la variable no existe el comando no tendra éxito. Si <c> no se especifica el comando lista todas las variables.
+
+Ejemplo:
+
+my_sh $ set a hola
+my_sh $ get a      # se muestra el valor de a
+hola
+my_sh $ get b      # b no se encuentra el sistema
+my_sh $ set c 25
+my_sh $ get        # se muestran todas las variables del sistema
+a = hola
+c = 25
 #
