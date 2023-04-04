@@ -1,17 +1,17 @@
-El comando history muestra los últimos 10 comandos ejecutados en el shell, enumerados desde 1 para el más antiguo hasta 10 para el último comando. Si el comando ejecutado empieza con espacios no será guardado en el historial.
-
-Ejemplo:
-
-my_sh $ history
-1: ls
-2: cd
-3: history
-my_sh $ cd      # se guarda en el historial
-my_sh $ history
-1: ls
-2: cd
-3: history
-4: cd
-5: history
-my_sh $  hola   # no se guarda en el historial
-#
+El comando history muestra los últimos 10 comandos ejecutados en el shell, enumerados desde 1 para el más antiguo hasta 10 
+para el último comando. Si el comando ejecutado empieza con espacios no será guardado en el historial.\
+\
+Ejemplo:\
+\
+my_sh $ history\
+1: ls\
+2: cd\
+3: history\
+my_sh $ cd      # se guarda en el historial\
+my_sh $ history\
+1: ls\
+2: cd\
+3: history\
+4: cd\
+5: history\
+my_sh $  hola   # no se guarda en el historial\

@@ -1,2 +1,1 @@
-El comando true siempre se ejecuta con éxito, puede ver detalles de su uso en chain y conditional.
-#
+El comando true siempre se ejecuta con éxito, puede ver detalles de su uso en chain y conditional.\

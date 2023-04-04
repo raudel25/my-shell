@@ -83,7 +83,6 @@ int main() {
     background_pid = createList();
     background_command = createListG();
     my_sh_init_variables();
-    load_help();
 
     signal(SIGINT, my_sh_ctrl_c);
 

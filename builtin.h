@@ -63,5 +63,3 @@ int my_sh_get(char **args);
 int my_sh_true();
 
 int my_sh_false();
-
-void load_help();

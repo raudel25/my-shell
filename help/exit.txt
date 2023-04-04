@@ -1,2 +1,1 @@
-El comando exit para la ejecución del shell.
-#
+El comando exit para la ejecución del shell.\

@@ -1,9 +1,9 @@
-El comando unset <c> elimina la variable <c> del sistema con su respectivo valor. Si <c> no existe el comando no tiene éxito
-
-Ejemplo:
-
-my_sh $ set c hola
-my_sh $ get c
-hola
-my_sh $ unset c # c se elimina del sistema
-#
+El comando unset <c> elimina la variable <c> del sistema con su respectivo valor. Si <c> no existe el comando no tiene
+éxito.\
+\
+Ejemplo:\
+\
+my_sh $ set c hola\
+my_sh $ get c\
+hola\
+my_sh $ unset c # c se elimina del sistema\
