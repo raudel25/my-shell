@@ -19,7 +19,6 @@
 #define ERROR "\033[1;31mmy_sh\033[0m"
 
 #define HISTORY_FILE ".my_sh_history"
-#define HELP_PATH "../help/"
 #define MY_SH_TOK_BUF_SIZE 1024
 #define MY_SH_MAX_HISTORY 10
 

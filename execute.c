@@ -16,6 +16,7 @@
 
 #define MY_SH_TOK_DELIM " \t\r\n\a"
 #define ERROR "\033[1;31mmy_sh\033[0m"
+#define MY_SH_TOK_BUF_SIZE 1024
 
 
 List *pipes_pid = NULL;
@@ -237,7 +238,7 @@ int my_sh_set(char **args, char *line) {
                             waitpid(pid, &status, WUNTRACED);
                         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
                     }
-                    char *buffer = (char *) malloc(1024);
+                    char *buffer = (char *) malloc(MY_SH_TOK_BUF_SIZE);
 
                     close(fd[1]);
 
@@ -247,6 +248,9 @@ int my_sh_set(char **args, char *line) {
                     while (read(fd[0], &c, 1) > 0) {
                         buffer[i] = c;
                         i++;
+                        if (i % MY_SH_TOK_BUF_SIZE == 0) {
+                            buffer = (char *) realloc(buffer, MY_SH_TOK_BUF_SIZE * (i / MY_SH_TOK_BUF_SIZE * 2));
+                        }
                     }
 
                     close(fd[0]);
