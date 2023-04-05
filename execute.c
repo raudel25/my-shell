@@ -443,10 +443,13 @@ int my_sh_conditional(char **args, char *line) {
 
     int status = !my_sh_execute(c_condition, 0, 0);
 
-    if (status) my_sh_execute(c_then, 0, 0);
-    else if (ind_else != -1) my_sh_execute(c_else, 0, 0);
+    if (status) {
+        return my_sh_execute(c_then, 0, 0);
+    } else if (ind_else != -1) {
+        return my_sh_execute(c_else, 0, 0);
+    }
 
-    return 0;
+    return 1;
 }
 
 int my_sh_execute(char *new_line, int save, int possible_back) {
