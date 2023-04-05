@@ -16,3 +16,11 @@ my_sh $ if cond then execute1 else execute2 end\
 my_sh $ if cond1 then if cond2 then execute1 end else execute2 end\
 my_sh $ if true then execute end                                   # simpre se ejecutará execute\
 my_sh $ if false then execute end                                  # nunca se ejecutará execute\
+\
+Implementación:\
+\
+Se parsea el comando introducido en busca de los operadores de este apartado, se comprueba que los operadores a ejecutar
+sean parte de la misma operación, para esto llevamos un contador que aumenta al encontrar un if y disminuye al encontrar un
+end. En caso de que la busquedá sea satisfactoria se obtiene el substring correspondiente, se ejecuta está nueva instrucción
+y se realiza la comprobación correspondiente del éxito del proceso a ejecutar.\
+

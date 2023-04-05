@@ -11,3 +11,8 @@ my_sh $ history\
 4: history\
 my_sh $ again 1 # se ejecuta ls\
 my_sh $ again   # se ejecuta ls dado que fue el último comando\
+\
+Implementación:\
+\
+Se lee el archivo .my_sh_history ubicado en /home y se busca el comando con el índice especificado.\
+

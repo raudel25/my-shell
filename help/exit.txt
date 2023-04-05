@@ -1,1 +1,6 @@
 El comando exit para la ejecución del shell.\
+\
+Implementación:\
+\
+Se ejecuta la función exit(EXIT_SUCCESS) para terminar la ejcución del shell.\
+

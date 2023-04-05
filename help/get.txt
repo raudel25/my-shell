@@ -11,3 +11,8 @@ my_sh $ set c 25\
 my_sh $ get        # se muestran todas las variables del sistema\
 a = hola\
 c = 25\
+\
+Implementación:\
+\
+Para almacenar las variables se utiliza un array de tamaño fijo y se indexa en el valor de dicha variable por su código ascii.\
+

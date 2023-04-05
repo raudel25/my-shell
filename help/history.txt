@@ -15,3 +15,8 @@ my_sh $ history\
 4: cd\
 5: history\
 my_sh $  hola   # no se guarda en el historial\
+\
+Implementación:\
+\
+Se guardan los comandos en el archivo .my_sh_history ubicado en /home.\
+

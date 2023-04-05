@@ -11,3 +11,9 @@ archivo.txt my_sh\
 my_sh $ get a\
 archivo.txt my_sh\
 my_sh $ set a `cd` # la salida de cd es vacía por tanto el set falla y el valor de la variable no cambia\
+\
+Implementación:\
+\
+Para almacenar las variables se utiliza un array de tamaño fijo y se indexa en el valor de dicha variable por su código ascii.
+en el caso de `command` se crea un fork() se ejecuta command y se lee la salida de ese proceso.\
+

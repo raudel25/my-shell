@@ -17,3 +17,10 @@ my_sh $ command1 && command2\
 my_sh $ command1 || command2\
 my_sh $ command1 && command2; || command3 # se ejecutará command1, si este tiene éxito se ejecutará command2, si ambos 
 commandos command1 y command2 tienen éxito no se ejecutará más nada en caso contrario se ejecutará command3\
+\
+Implementación:\
+\
+Se parsea el comando introducido en busca de los operadores de este apartado. En caso de que la busquedá sea satisfactoria
+se obtiene el substring correspondiente, se ejecuta está nueva instrucción y se realiza la comprobación correspondiente del
+éxito del proceso a ejecutar.\
+

@@ -114,6 +114,8 @@ int my_sh_help(char **args) {
         for (int i = 0; i < num_commands(); i++) {
             printf("%s%s%s: %s\n", BOLD_BLUE, commands[i], RESET, commands_help[i]);
         }
+        printf("Total: 10 puntos\n");
+
         return 0;
     }
 

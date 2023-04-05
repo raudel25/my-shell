@@ -11,3 +11,9 @@ my_sh $ jobs\
 my_sh $ fg 1                      # el comando <cp movie.mkv ..> se trae de vuelta al foreground\
                                   # esperamos hasta que <cp movie.mkv ..> se ejecute\
 my_sh $ fg                        # el comando <rm file.zip> se trae de vuelta al foreground\
+\
+Implementación:\
+\
+En la información que se obtuvo al enviar los comandos al background se busca el pid correspondiente, se ejecuta la función
+waitpid() para esperar a que termine el proceso y se elimina el proceso de los almacenados en el background.\
+

@@ -249,7 +249,7 @@ int my_sh_set(char **args, char *line) {
                         buffer[i] = c;
                         i++;
                         if (i % MY_SH_TOK_BUF_SIZE == 0) {
-                            buffer = (char *) realloc(buffer, MY_SH_TOK_BUF_SIZE * (i / MY_SH_TOK_BUF_SIZE * 2));
+                            buffer = (char *) realloc(buffer,i * 2);
                         }
                     }
 

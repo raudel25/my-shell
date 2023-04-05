@@ -5,3 +5,8 @@ Ejemplo:\
 \
 my_sh $ cd new_dir # se mueve hacia la carpeta new_dir\
 my_sh $ cd         # se mueve hacia home\
+\
+Implementación:\
+\
+Se utiliza la función chdir() de c.\
+

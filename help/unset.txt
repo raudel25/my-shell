@@ -7,3 +7,7 @@ my_sh $ set c hola\
 my_sh $ get c\
 hola\
 my_sh $ unset c # c se elimina del sistema\
+\
+Implementación:\
+\
+Para almacenar las variables se utiliza un array de tamaño fijo y se indexa en el valor de dicha variable por su código ascii.\
