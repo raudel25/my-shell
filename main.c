@@ -20,50 +20,56 @@
 #define MY_SH_MAX_HISTORY 10
 
 int current_command;
+char **history;
+int top;
 
-void command_change(int up) {
-    char **args = get_history();
-
-    int i;
-    for (i = 0; args[i] != NULL; i++) {
-        if (args[i][0] != '#') break;
-    }
-
-    if (i == 0) {
-        free(args);
-        return;
-    }
-
-    int top = i < MY_SH_MAX_HISTORY ? i : MY_SH_MAX_HISTORY;
-    if (current_command == -1) {
-        current_command = top;
-    }
-
-    char *c = sub_str(args[top - current_command], 1, (int) strlen(args[top - current_command]) - 1);
+void command_change() {
+    char *c = sub_str(history[top - current_command], 1, (int) strlen(history[top - current_command]) - 1);
     rl_replace_line("", 0);
     rl_insert_text(c);
     rl_redisplay();
 
-    if (up && current_command != 1) current_command--;
-    if (!up && current_command != MY_SH_MAX_HISTORY) current_command++;
-
-    free(args);
     free(c);
 }
 
+
+void load_history() {
+    history = get_history();
+
+    int i;
+    for (i = 0; history[i] != NULL; i++) {
+        if (history[i][0] != '#') break;
+    }
+
+    top = i < MY_SH_MAX_HISTORY ? i : MY_SH_MAX_HISTORY;
+    current_command = -1;
+}
+
 static int up_arrow_callback() {
-    command_change(1);
+    if (current_command != 1 && current_command != -1 && top != 0) {
+        current_command--;
+        command_change();
+    }
+    if (current_command == -1 && top != 0) {
+        current_command = top;
+        command_change();
+    }
+
     return 0;
 }
 
 static int down_arrow_callback() {
-    if (current_command != -1) command_change(0);
+    if (current_command != top && current_command != -1 && top != 0) {
+        current_command++;
+        command_change();
+    }
     return 0;
 }
 
 char *prompt() {
+    load_history();
+
     char *line = NULL;
-    current_command = -1;
     rl_bind_keyseq("\\e[A", up_arrow_callback);
     rl_bind_keyseq("\\e[B", down_arrow_callback);
 
@@ -74,11 +80,13 @@ char *prompt() {
 
     line = readline(head);
 
+    free(history);
     return line;
 }
 
 void my_sh_ctrl_c() {
     if (current_pid == -1) {
+        current_command = -1;
         printf("\n");
         rl_on_new_line();
         rl_replace_line("", 0);
