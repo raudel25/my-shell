@@ -10,22 +10,6 @@
 
 #define MY_SH_TOK_BUF_SIZE 1024
 
-char *my_sh_read_line() {
-    char *line = NULL;
-    size_t buf_size = 0;
-
-    if (getline(&line, &buf_size, stdin) == -1) {
-        if (feof(stdin)) {
-            exit(EXIT_SUCCESS);  // We recieved an EOF
-        } else {
-            perror("readline");
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    return line;
-}
-
 char **my_sh_split_line(char *line, char *split) {
     int buf_size = MY_SH_TOK_BUF_SIZE, position = 0;
     char **tokens = malloc(buf_size * sizeof(char *));
@@ -183,24 +167,6 @@ char *determinate_set_command(char *line) {
     if (l > r || l == -1 || r == -1) return NULL;
 
     return sub_str(line, l, r);
-}
-
-char *array_to_str(char **args) {
-    char *line = (char *) malloc(MY_SH_TOK_BUF_SIZE);
-
-    int i;
-    int x = 0;
-    for (i = 0; args[i] != NULL; i++) {
-        for (int j = 0; j < strlen(args[i]); j++) {
-            line[x++] = args[i][j];
-        }
-        line[x++] = ' ';
-    }
-
-    line[x - 1] = '\n';
-    line[x] = 0;
-
-    return line;
 }
 
 int array_size(char **args) {
