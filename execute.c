@@ -149,9 +149,6 @@ int my_sh_launch_not_out(char **args, int init, int end) {
         }
     }
 
-    if (strcmp(new_args[0], "again") == 0)
-        return my_sh_again(new_args);
-
     return -1;
 }
 
@@ -347,7 +344,9 @@ int my_sh_conditional(char **args, char *line) {
     return 1;
 }
 
-int my_sh_execute(char *new_line, int save, int possible_back) {
+int my_sh_execute(char *line, int save, int possible_back) {
+    char *new_line= my_sh_again(line);
+
     int status;
     char *copy = (char *) malloc(strlen(new_line));
     strcpy(copy, new_line);
@@ -358,6 +357,7 @@ int my_sh_execute(char *new_line, int save, int possible_back) {
     if (args[0] == NULL) {
         free(copy);
         free(args);
+        free(new_line);
 
         return 1;
     }
@@ -369,6 +369,7 @@ int my_sh_execute(char *new_line, int save, int possible_back) {
 
         free(copy);
         free(args);
+        free(new_line);
 
         return q;
     }
@@ -387,6 +388,7 @@ int my_sh_execute(char *new_line, int save, int possible_back) {
     if (chain != -1) {
         free(copy);
         free(args);
+        free(new_line);
 
         return chain;
     }
@@ -395,6 +397,7 @@ int my_sh_execute(char *new_line, int save, int possible_back) {
 
     free(copy);
     free(args);
+    free(new_line);
 
     return status;
 }

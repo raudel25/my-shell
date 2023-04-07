@@ -68,4 +68,4 @@ int my_sh_set(char **args);
 
 int my_sh_background(char *line);
 
-int my_sh_again(char **args);
+char *my_sh_again(char *line);

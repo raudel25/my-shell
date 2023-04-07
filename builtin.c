@@ -22,6 +22,7 @@
 #define HISTORY_FILE ".my_sh_history"
 #define MY_SH_TOK_BUF_SIZE 1024
 #define MY_SH_MAX_HISTORY 10
+#define MY_SH_TOK_DELIM " \t\r\n\a"
 
 int current_pid;
 
@@ -465,25 +466,53 @@ int my_sh_background(char *line) {
     return 0;
 }
 
-int my_sh_again(char **args) {
-    int status = 1;
+char *my_sh_again(char *line) {
+    char **args = my_sh_split_line(line, MY_SH_TOK_DELIM);
+    char *aux = (char *) malloc(MY_SH_TOK_BUF_SIZE);
+    strcpy(aux, "");
+
     int q = 0;
     int last = 0;
+    int error = 0;
 
-    if (args[1] != NULL) {
-        char *p;
-        q = (int) strtol(args[1], &p, 10);
-    } else last = 1;
+    int len = array_size(args);
+    for (int i = 0; i < len; i++) {
+        if (strcmp(args[i], "again") == 0) {
+            last = 0;
 
-    char *c_again = get_again(q, last);
+            if (args[i + 1] != NULL) {
+                char *p;
+                q = (int) strtol(args[i + 1], &p, 10);
 
-    if (c_again != NULL) {
-        status = my_sh_execute(c_again, 1, 1);
-    } else
+                if (q == 0) last = 1;
+                else i++;
+            } else last = 1;
+
+            char *c_again = get_again(q, last);
+
+            if (c_again != NULL) {
+                c_again[strlen(c_again)-1]=0;
+                strcat(aux, c_again);
+                free(c_again);
+            } else {
+                error = 1;
+                strcat(aux, "false");
+            }
+        } else {
+            strcat(aux, args[i]);
+        }
+
+        if (i != len - 1) {
+            strcat(aux, " ");
+        }
+    }
+    strcat(aux,"\n");
+
+    if (error) {
         fprintf(stderr, "%s: incorrect command again\n", ERROR);
+    }
 
-    free(c_again);
-
-    return status;
+    free(args);
+    return aux;
 }
 
