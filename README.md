@@ -1,5 +1,7 @@
 # my-shell
 
+Este proyecto tiene como objetivo la creación de un shell para `Linux` en `c`.
+
 ### Dependencias
 
 El poryecto se encuentra desarrollado en c 17, y depende de la biblioteca 
@@ -19,8 +21,6 @@ Si está utilizando una distribución basada en Arch Linux, como Manjaro o Anter
 ```
 sudo pacman -S readline
 ```
-
-Este proyecto tiene como objetivo la creación de un shell para `Linux` en `c`.
 
 ### Ejecutar el Proyecto
 
