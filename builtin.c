@@ -363,10 +363,11 @@ int my_sh_set(char **args) {
 
     if (args[1] != NULL && args[2] != NULL) {
         if (check_variable(args[1])) {
-            if (variables[args[1][0] - 'a'] != NULL) {
-                free(variables[args[1][0] - 'a']);
-            }
             if (args[2][0] != '`') {
+                if (variables[args[1][0] - 'a'] != NULL) {
+                    free(variables[args[1][0] - 'a']);
+                }
+
                 variables[args[1][0] - 'a'] = (char *) malloc(strlen(args[2]));
                 strcpy(variables[args[1][0] - 'a'], args[2]);
             } else {
@@ -418,6 +419,11 @@ int my_sh_set(char **args) {
                         buffer[i] = 0;
                         if (buffer[i - 1] == '\n')
                             buffer[i - 1] = 0;
+
+                        if (variables[args[1][0] - 'a'] != NULL) {
+                            free(variables[args[1][0] - 'a']);
+                        }
+
                         variables[args[1][0] - 'a'] = (char *) malloc(strlen(buffer));
                         strcpy(variables[args[1][0] - 'a'], buffer);
                     } else {
