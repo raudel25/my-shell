@@ -12,7 +12,6 @@
 #include "builtin.h"
 #include "execute.h"
 #include "list.h"
-#include "glist.h"
 
 #define MY_SH_TOK_DELIM " \t\r\n\a"
 #define ERROR "\033[1;31mmy_sh\033[0m"
@@ -135,6 +134,27 @@ int my_sh_launch(char **args, int init, int end, int fd_in, int fd_out, int fd_n
     return status;
 }
 
+int my_sh_launch_not_out(char **args, int init, int end) {
+    char *new_args[end - init];
+
+    for (int i = init; i < end; i++) {
+        new_args[i - init] = args[i];
+    }
+    new_args[end - init] = NULL;
+
+
+    for (int i = 0; i < my_sh_num_builtins(); i++) {
+        if (strcmp(new_args[0], builtin_str[i]) == 0) {
+            return (*builtin_func[i])(new_args);
+        }
+    }
+
+    if (strcmp(new_args[0], "again") == 0)
+        return my_sh_again(new_args);
+
+    return -1;
+}
+
 void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
     fd[0] = fd_in != -1 ? fd_in : -1;
     fd[1] = -1;
@@ -180,131 +200,6 @@ void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
         fd[1] = fd1[1];
         fd[2] = fd1[0];
     }
-}
-
-int my_sh_again(char **args) {
-    int status = 1;
-    int q = 0;
-    int last = 0;
-
-    if (args[1] != NULL) {
-        char *p;
-        q = (int) strtol(args[1], &p, 10);
-    } else last = 1;
-
-    char *c_again = get_again(q, last);
-
-    if (c_again != NULL) {
-        status = my_sh_execute(c_again, 1, 1);
-    } else
-        fprintf(stderr, "%s: incorrect command again\n", ERROR);
-
-    free(c_again);
-
-    return status;
-}
-
-int my_sh_set(char **args, char *line) {
-    int status = 0;
-
-    if (args[1] != NULL && args[2] != NULL) {
-        if (check_variable(args[1])) {
-            if (variables[args[1][0] - 'a'] != NULL) {
-                free(variables[args[1][0] - 'a']);
-            }
-            if (args[2][0] != '`') {
-                variables[args[1][0] - 'a'] = (char *) malloc(strlen(args[2]));
-                strcpy(variables[args[1][0] - 'a'], args[2]);
-            } else {
-                char *new_command = determinate_set_command(line);
-
-                if (new_command != NULL) {
-                    char *new_command_format = my_sh_decod_line(new_command);
-
-                    int fd[2];
-                    pipe(fd);
-
-                    pid_t pid;
-
-                    pid = fork();
-                    if (pid == 0) {
-                        dup2(fd[1], STDOUT_FILENO);
-                        close(fd[1]);
-                        close(fd[0]);
-
-                        exit(my_sh_execute(new_command_format, 0, 1));
-                    } else if (pid > 0) {
-                        do {
-                            waitpid(pid, &status, WUNTRACED);
-                        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
-                    }
-                    char *buffer = (char *) malloc(MY_SH_TOK_BUF_SIZE);
-
-                    close(fd[1]);
-
-                    char c;
-                    int i = 0;
-
-                    while (read(fd[0], &c, 1) > 0) {
-                        buffer[i] = c;
-                        i++;
-                        if (i % MY_SH_TOK_BUF_SIZE == 0) {
-                            buffer = (char *) realloc(buffer,i * 2);
-                        }
-                    }
-
-                    close(fd[0]);
-
-                    if (i != 0) {
-                        buffer[i] = 0;
-                        if (buffer[i - 1] == '\n')
-                            buffer[i - 1] = 0;
-                        variables[args[1][0] - 'a'] = (char *) malloc(strlen(buffer));
-                        strcpy(variables[args[1][0] - 'a'], buffer);
-                    } else {
-                        fprintf(stderr, "%s: the output of the command is null\n", ERROR);
-                        status = 1;
-                    }
-
-                    free(buffer);
-                    free(new_command);
-                    free(new_command_format);
-                } else {
-                    fprintf(stderr, "%s: incorrect command set\n", ERROR);
-                    status = 1;
-                }
-            }
-        } else {
-            status = 1;
-        }
-    } else {
-        fprintf(stderr, "%s: incorrect command set\n", ERROR);
-        status = 1;
-    }
-
-    return status;
-}
-
-int my_sh_background(char *line) {
-    char *new_line = sub_str(line, 0, (int) strlen(line) - 4);
-    char *copy = malloc(strlen(new_line));
-    strcpy(copy, new_line);
-
-    int pid;
-
-    pid = fork();
-    if (pid == 0) {
-        setpgid(0, 0);
-
-        exit(my_sh_execute(new_line, 0, 0));
-    } else if (pid > 0) {
-        setpgid(pid, pid);
-        append(background_pid, pid);
-        appendG(background_command, new_line);
-        printf("[%d]\t%d\n", background_pid->len, pid);
-    }
-
-    return 0;
 }
 
 void my_sh_execute_save(char **args, char *line, int save) {
@@ -457,6 +352,7 @@ int my_sh_execute(char *new_line, int save, int possible_back) {
     char *copy = (char *) malloc(strlen(new_line));
     strcpy(copy, new_line);
 
+    my_sh_encod_set(new_line);
     char **args = my_sh_split_line(new_line, MY_SH_TOK_DELIM);
 
     if (args[0] == NULL) {
@@ -495,7 +391,7 @@ int my_sh_execute(char *new_line, int save, int possible_back) {
         return chain;
     }
 
-    status = my_sh_execute_args(args, copy);
+    status = my_sh_execute_pipes(args);
 
     free(copy);
     free(args);
@@ -503,29 +399,22 @@ int my_sh_execute(char *new_line, int save, int possible_back) {
     return status;
 }
 
-int my_sh_execute_args(char **args, char *line) {
+int my_sh_execute_pipes(char **args) {
     int fd[3];
     fd[2] = -1;
     int aux[2];
     int init = 0;
     int result;
 
-    for (int i = 0; i < my_sh_num_builtins(); i++) {
-        if (strcmp(args[0], builtin_str[i]) == 0) {
-            return (*builtin_func[i])(args);
-        }
-    }
-
-    if (strcmp(args[0], "again") == 0)
-        return my_sh_again(args);
-    if (strcmp(args[0], "set") == 0)
-        return my_sh_set(args, line);
-
     while (1) {
         my_sh_new_args(init, args, fd[2], fd, aux);
         int end = aux[0];
 
-        result = my_sh_launch(args, init, end, fd[0], fd[1], fd[2]);
+        result = my_sh_launch_not_out(args, init, end);
+
+        if (result == -1) {
+            result = my_sh_launch(args, init, end, fd[0], fd[1], fd[2]);
+        }
 
         init = aux[1];
         if (args[end] == NULL || args[init] == NULL)

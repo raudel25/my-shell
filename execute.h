@@ -13,10 +13,4 @@ extern List *pipes_pid;
 
 int my_sh_execute(char *new_line, int save, int possible_back);
 
-int my_sh_execute_args(char **args, char *line);
-
-int my_sh_background(char *line);
-
-int my_sh_set(char **args, char *line);
-
-int my_sh_again(char **args);
+int my_sh_execute_pipes(char **args);

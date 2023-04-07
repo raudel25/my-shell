@@ -40,6 +40,19 @@ char **my_sh_split_line(char *line, char *split) {
     return tokens;
 }
 
+void my_sh_encod_set(char *line) {
+    int c_set = 0;
+
+    for (int i = 0; i < strlen(line); i++) {
+        if (i > 0 && line[i - 1] == ' ' && line[i] == '`') c_set++;
+        if (i > 0 && line[i - 1] != ' ' && line[i] == '`') c_set--;
+
+        if (c_set != 0) {
+            if (line[i] == ' ') line[i] = '#';
+        }
+    }
+}
+
 char *my_sh_decod_line(char *line) {
     char *aux_line = (char *) malloc(3 * strlen(line));
 
@@ -148,25 +161,10 @@ char *sub_str(char *line, int init, int end) {
     return new_line;
 }
 
-char *determinate_set_command(char *line) {
-    int i;
-    int l = -1;
-    int r = -1;
-    int find = 0;
-    for (i = 0; i < strlen(line); i++) {
-        if (line[i] == '`' && find) {
-            r = i - 1;
-            break;
-        }
-        if (line[i] == '`') {
-            l = i + 1;
-            find = 1;
-        }
+void my_sh_decod_set(char *line) {
+    for(int i=0;i< strlen(line);i++){
+        if(line[i]=='#') line[i]=' ';
     }
-
-    if (l > r || l == -1 || r == -1) return NULL;
-
-    return sub_str(line, l, r);
 }
 
 int array_size(char **args) {

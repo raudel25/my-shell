@@ -22,9 +22,9 @@ extern char *variables[26];
 
 extern struct passwd *pw;
 
-extern char *builtin_str[6];
+extern char *builtin_str[7];
 
-extern int (*builtin_func[6])(char **);
+extern int (*builtin_func[7])(char **);
 
 extern char *builtin_str_out[4];
 
@@ -63,3 +63,9 @@ int my_sh_get(char **args);
 int my_sh_true();
 
 int my_sh_false();
+
+int my_sh_set(char **args);
+
+int my_sh_background(char *line);
+
+int my_sh_again(char **args);

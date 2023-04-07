@@ -13,6 +13,8 @@ char *my_sh_decod_line(char *line);
 
 char *sub_str(char *line, int init, int end);
 
-char *determinate_set_command(char *line);
+void my_sh_decod_set(char *line);
 
 int array_size(char **args);
+
+void my_sh_encod_set(char *line);
