@@ -36,19 +36,21 @@ def to_char_array_c(name: str, files: str) -> str:
 
 
 files = []
+name = []
 content = []
 
 for i in os.listdir('.'):
     if i.endswith('.txt'):
-        files.append(i[0:-4])
+        files.append(i)
+        name.append(i[3:-4])
 
 for i in files:
-    f = open(i+'.txt', "r")
+    f = open(i, "r")
     aux = parser(f.read())
     content.append(aux)
     f.close()
 
-commands = to_char_array_c('commands', files)
+commands = to_char_array_c('commands', name)
 commands_help = to_char_array_c('commands_help', content)
 
 fc = open('../help.c', "w")

@@ -21,7 +21,7 @@
 
 #define HISTORY_FILE ".my_sh_history"
 #define MY_SH_TOK_BUF_SIZE 1024
-#define MY_SH_MAX_HISTORY 10
+#define MY_SH_MAX_HISTORY 20
 #define MY_SH_TOK_DELIM " \t\r\n\a"
 
 int current_pid;
@@ -113,12 +113,11 @@ int my_sh_cd(char **args) {
 
 int my_sh_help(char **args) {
     if (args[1] == NULL) {
-        printf("\n%smy_shell%s: Raudel Alejandro Gomez Molina\n\nComandos y Funcionalidades\n\n", BOLD_BLUE, RESET);
+        printf("\n");
 
         for (int i = 0; i < num_commands(); i++) {
             printf("%s%s%s: %s\n", BOLD_BLUE, commands[i], RESET, commands_help[i]);
         }
-        printf("Total: 10 puntos\n");
 
         return 0;
     }

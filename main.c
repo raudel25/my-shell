@@ -17,7 +17,7 @@
 #define BOLD_RED "\033[1;31m"
 
 #define MY_SH_TOK_DELIM " \t\r\n\a"
-#define MY_SH_MAX_HISTORY 10
+#define MY_SH_MAX_HISTORY 20
 
 int current_command;
 char **history;
