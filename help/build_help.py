@@ -53,6 +53,6 @@ for i in files:
 commands = to_char_array_c('commands', name)
 commands_help = to_char_array_c('commands_help', content)
 
-fc = open('../help.c', "w")
+fc = open('../src/help.c', "w")
 fc.write(commands+commands_help)
 fc.close()

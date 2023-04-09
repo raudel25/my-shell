@@ -76,7 +76,7 @@ int (*builtin_func_out[4])(char **) = {
 
 
 char *my_sh_path_history() {
-    char *path = (char *) malloc(strlen(pw->pw_dir) + strlen(HISTORY_FILE) + 1);
+    char *path = (char *) malloc(sizeof(char) * (strlen(pw->pw_dir) + strlen(HISTORY_FILE) + 1));
 
     strcpy(path, pw->pw_dir);
     strcat(path, "/");
@@ -234,7 +234,7 @@ char *get_again(int ind, int last) {
     for (int j = 0; j < top; j++) {
         if (ind == j + 1) {
             char *aux = sub_str(args[top - 1 - j], 1, (int) strlen(args[top - 1 - j]) - 1);
-            again = (char *) malloc(strlen(aux) + 1);
+            again = (char *) malloc(sizeof(char) * (strlen(aux) + 1));
             strcpy(again, aux);
             strcat(again, "\n");
             free(aux);
@@ -367,7 +367,7 @@ int my_sh_set(char **args) {
                     free(variables[args[1][0] - 'a']);
                 }
 
-                variables[args[1][0] - 'a'] = (char *) malloc(strlen(args[2]));
+                variables[args[1][0] - 'a'] = (char *) malloc(sizeof(char) * strlen(args[2]));
                 strcpy(variables[args[1][0] - 'a'], args[2]);
             } else {
                 char *new_command = NULL;
@@ -423,7 +423,7 @@ int my_sh_set(char **args) {
                             free(variables[args[1][0] - 'a']);
                         }
 
-                        variables[args[1][0] - 'a'] = (char *) malloc(strlen(buffer));
+                        variables[args[1][0] - 'a'] = (char *) malloc(sizeof(char) * strlen(buffer));
                         strcpy(variables[args[1][0] - 'a'], buffer);
                     } else {
                         fprintf(stderr, "%s: the output of the command is null\n", ERROR);
@@ -451,7 +451,7 @@ int my_sh_set(char **args) {
 
 int my_sh_background(char *line) {
     char *new_line = sub_str(line, 0, (int) strlen(line) - 4);
-    char *copy = malloc(strlen(new_line));
+    char *copy = malloc(sizeof(char) * strlen(new_line));
     strcpy(copy, new_line);
 
     int pid;

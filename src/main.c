@@ -24,12 +24,18 @@ char **history;
 int top;
 
 void command_change() {
-    char *c = sub_str(history[top - current_command], 1, (int) strlen(history[top - current_command]) - 1);
+    int len = (int) strlen(history[top - current_command]) - 1;
+    char c[len];
+
+    int i;
+    for (i = 0; i < len; i++) {
+        c[i] = history[top - current_command][i + 1];
+    }
+    c[i] = 0;
+
     rl_replace_line("", 0);
     rl_insert_text(c);
     rl_redisplay();
-
-    free(c);
 }
 
 

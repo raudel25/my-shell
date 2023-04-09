@@ -54,7 +54,7 @@ void my_sh_encode_set(char *line) {
 }
 
 char *my_sh_decode_line(char *line) {
-    char *aux_line = (char *) malloc(3 * strlen(line));
+    char *aux_line = (char *) malloc(sizeof(char) * 3 * strlen(line));
 
     int len = (int) strlen(line);
     int j = 0;
@@ -156,7 +156,7 @@ char *my_sh_decode_line(char *line) {
         aux_line[j++] = line[i];
     }
 
-    char *new_line = (char *) malloc(j + 1);
+    char *new_line = (char *) malloc((j + 1) * sizeof(char));
 
     for (int x = 0; x < j; x++) {
         new_line[x] = aux_line[x];
@@ -170,7 +170,7 @@ char *my_sh_decode_line(char *line) {
 }
 
 char *sub_str(const char *line, int init, int end) {
-    char *new_line = (char *) malloc(end - init + 1);
+    char *new_line = (char *) malloc(sizeof(char) * (end - init + 1));
 
     int i;
     for (i = 0; i < end - init + 1; i++) {
