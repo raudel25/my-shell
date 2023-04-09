@@ -8,6 +8,6 @@ my_sh $ ls                # el ciclo del shell no espera a que el comando anteri
 \
 Implementación:\
 \
-Se crea un nuevo proceso hijo con la funcion fork(), pero no se ejecuta el waitpid() que espera a que el proceso culmine.
+Se crea un nuevo proceso hijo con la función fork(), pero no se ejecuta el waitpid() que espera a que el proceso culmine.
 En cambio se almacena el pid del proceso y el nombre se este, para cuando sea necesario traer el proceso hacia el foreground.\
 

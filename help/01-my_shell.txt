@@ -1,14 +1,14 @@
-Raudel Alejandro Gomez Molina\
+Raudel Alejandro Gómez Molina\
 \
 Funcionalidades:\
 \
 basic: funcionalidades básicas\
-pipes: implementación de multiples tuberias\
+pipes: implementación de múltiples tuberías\
 background: permite correr procesos en el background\
 spaces: los comandos pueden estar separados por cualquier cantidad de espacios\
 history: se almacena un historial de comandos\
 ctrl+c: finaliza el proceso actual\
-chain: permite ejecutar multiples comandos en una sola línea y comandos de forma condicional\
+chain: permite ejecutar múltiples comandos en una sola línea y comandos de forma condicional\
 conditional: permite ejecutar comandos de forma condicional\
 variables: permite almacenar variables\
 \

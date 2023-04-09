@@ -1,5 +1,5 @@
-En este apartado encontramos 4 comandos ( | , < , > , >> ) que nos permitiran redirigir la entrada y la salida de los 
-comnados que ejecutemos.\
+En este apartado encontramos 4 comandos ( | , < , > , >> ) que nos permitirán redirigir la entrada y la salida de los
+comandos que ejecutemos.\
 \
 El comando command1 | command2 ejecuta <command1>, redirecciona la salida de <command1> a la entrada de <command2> y luego
 ejecuta <command2>.\
@@ -9,7 +9,7 @@ El comando command < file redirecciona el contenido del archivo <file> a la entr
 El comando command > file ejecuta <command> redirecciona la salida de <command> hacia el archivo <file>, sobrescribiendo\
 el contenido de <file>.\
 \
-El comando command >> file hace lo mismo que el comando anterior pero escribe al final de <file> sin sobreescribir el\
+El comando command >> file hace lo mismo que el comando anterior pero escribe al final de <file> sin sobrescribir el\
 contenido de dicho archivo.\
 \
 Adicionalmente se pueden combinar todas estos comandos en una sola línea.\
@@ -26,7 +26,7 @@ command3 y la salida de command3 se redirecciona a file2.\
 \
 Implementación:\
 \
-Se parsea el comando introducido en busca de los operadores de este apartado. En caso de que la busquedá sea satisfactoria
+Se parsea el comando introducido en busca de los operadores de este apartado. En caso de que la búsqueda sea satisfactoria
 se identifica los argumentos a ejecutar y el file descriptor de salida y de entrada correspondientes, que se obtienen mediante
 la función pipe(), read() o write(). Luego se ejecuta el proceso y se atrapa la entrada y salida del proceso en el file
 descriptor correspondiente mediante la función dup2().\

@@ -1,4 +1,4 @@
-El comnado jobs lista todos los procesos que están ocurriendo en el background.\
+El comando jobs lista todos los procesos que están ocurriendo en el background.\
 \
 Ejemplo:\
 \

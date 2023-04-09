@@ -4,7 +4,7 @@ Este proyecto tiene como objetivo la creación de un shell para `Linux` en `c`.
 
 ### Dependencias
 
-El poryecto se encuentra desarrollado en `c 17`, y depende de la biblioteca 
+El proyecto se encuentra desarrollado en `c 17`, y depende de la biblioteca 
 <a href="https://tiswww.case.edu/php/chet/readline/rltop.html">readline</a>.
 Para instalarla debe seguir los siguientes pasos.
 
@@ -31,8 +31,8 @@ terminal el siguiente comando:
 make
 ```
 
-Adicionalmente si cuenta con `cmake` puede entnotrar la configuración en el archivo
+Adicionalmente si cuenta con `cmake` puede encontrar la configuración en el archivo
 `CMakeLists.txt`.
 
-Los detalles de las funcionalidades y la ejcución se detallan dentro del propio
+Los detalles de las funcionalidades y la ejecución se detallan dentro del propio
 programa mediante el comando `help`.
