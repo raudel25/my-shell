@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "decod.h"
+#include "decode.h"
 
 #define MY_SH_TOK_BUF_SIZE 1024
 
@@ -40,7 +40,7 @@ char **my_sh_split_line(char *line, char *split) {
     return tokens;
 }
 
-void my_sh_encod_set(char *line) {
+void my_sh_encode_set(char *line) {
     int c_set = 0;
 
     for (int i = 0; i < strlen(line); i++) {
@@ -53,7 +53,7 @@ void my_sh_encod_set(char *line) {
     }
 }
 
-char *my_sh_decod_line(char *line) {
+char *my_sh_decode_line(char *line) {
     char *aux_line = (char *) malloc(3 * strlen(line));
 
     int len = (int) strlen(line);
@@ -122,10 +122,30 @@ char *my_sh_decod_line(char *line) {
                 if (line[i - 1] != ' ' && line[i + 1] == '&') {
                     aux_line[j++] = ' ';
                 }
+            } else if (i == len - 1 && i != 0) {
+                if (line[i - 1] != ' ') {
+                    aux_line[j++] = ' ';
+                }
             }
             aux_line[j++] = line[i];
             if (i != 0 && i != len - 1) {
                 if (line[i + 1] != ' ' && line[i - 1] == '&') {
+                    aux_line[j++] = ' ';
+                }
+            }
+
+            continue;
+        }
+
+        if (line[i] == ';') {
+            if (i != 0) {
+                if (line[i - 1] != ' ') {
+                    aux_line[j++] = ' ';
+                }
+            }
+            aux_line[j++] = line[i];
+            if (i != len - 1) {
+                if (line[i + 1] != ' ') {
                     aux_line[j++] = ' ';
                 }
             }
@@ -149,7 +169,7 @@ char *my_sh_decod_line(char *line) {
     return (char *) new_line;
 }
 
-char *sub_str(char *line, int init, int end) {
+char *sub_str(const char *line, int init, int end) {
     char *new_line = (char *) malloc(end - init + 1);
 
     int i;
@@ -161,7 +181,7 @@ char *sub_str(char *line, int init, int end) {
     return new_line;
 }
 
-void my_sh_decod_set(char *line) {
+void my_sh_decode_set(char *line) {
     for(int i=0;i< strlen(line);i++){
         if(line[i]=='#') line[i]=' ';
     }

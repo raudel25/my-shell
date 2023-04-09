@@ -69,3 +69,5 @@ int my_sh_set(char **args);
 int my_sh_background(char *line);
 
 char *my_sh_again(char *line);
+
+void my_sh_update_background();

@@ -8,7 +8,7 @@
 #include <string.h>
 #include <fcntl.h>
 
-#include "decod.h"
+#include "decode.h"
 #include "builtin.h"
 #include "execute.h"
 #include "list.h"
@@ -200,7 +200,7 @@ void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
 }
 
 void my_sh_execute_save(char **args, char *line, int save) {
-    if (strcmp(args[0], "exit") == 0 || strcmp(args[0], "again") == 0) save = 0;
+    if (strcmp(args[0], "exit") == 0) save = 0;
     if (save) save_history(line);
 }
 
@@ -348,14 +348,13 @@ int my_sh_execute(char *line, int save, int possible_back) {
     char *new_line= my_sh_again(line);
 
     int status;
-    char *copy = (char *) malloc(strlen(new_line));
+    char copy[strlen(new_line)];
     strcpy(copy, new_line);
 
-    my_sh_encod_set(new_line);
+    my_sh_encode_set(new_line);
     char **args = my_sh_split_line(new_line, MY_SH_TOK_DELIM);
 
     if (args[0] == NULL) {
-        free(copy);
         free(args);
         free(new_line);
 
@@ -367,7 +366,6 @@ int my_sh_execute(char *line, int save, int possible_back) {
     if (strcmp(args[array_size(args) - 1], "&") == 0 && possible_back) {
         int q = my_sh_background(copy);
 
-        free(copy);
         free(args);
         free(new_line);
 
@@ -377,8 +375,8 @@ int my_sh_execute(char *line, int save, int possible_back) {
     if (strcmp(args[0], "if") == 0) {
         int q = my_sh_conditional(args, copy);
 
-        free(copy);
         free(args);
+        free(new_line);
 
         return q;
     }
@@ -386,7 +384,6 @@ int my_sh_execute(char *line, int save, int possible_back) {
     int chain = my_sh_execute_chain(args, copy);
 
     if (chain != -1) {
-        free(copy);
         free(args);
         free(new_line);
 
@@ -395,7 +392,6 @@ int my_sh_execute(char *line, int save, int possible_back) {
 
     status = my_sh_execute_pipes(args);
 
-    free(copy);
     free(args);
     free(new_line);
 

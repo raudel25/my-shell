@@ -11,7 +11,7 @@
 #include <pwd.h>
 
 #include "builtin.h"
-#include "decod.h"
+#include "decode.h"
 #include "help.c"
 #include "execute.h"
 
@@ -374,11 +374,11 @@ int my_sh_set(char **args) {
 
                 if (args[2][strlen(args[2]) - 1] == '`') {
                     new_command = sub_str(args[2], 1, (int) strlen(args[2]) - 2);
-                    my_sh_decod_set(new_command);
+                    my_sh_decode_set(new_command);
                 }
 
                 if (new_command != NULL) {
-                    char *new_command_format = my_sh_decod_line(new_command);
+                    char *new_command_format = my_sh_decode_line(new_command);
 
                     int fd[2];
                     pipe(fd);
@@ -477,7 +477,7 @@ char *my_sh_again(char *line) {
     strcpy(aux, "");
 
     int q = 0;
-    int last = 0;
+    int last;
     int error = 0;
 
     int len = array_size(args);
@@ -511,7 +511,7 @@ char *my_sh_again(char *line) {
             strcat(aux, " ");
         }
     }
-    strcat(aux,"\n");
+    strcat(aux, "\n");
 
     if (error) {
         fprintf(stderr, "%s: incorrect command again\n", ERROR);
@@ -519,5 +519,21 @@ char *my_sh_again(char *line) {
 
     free(args);
     return aux;
+}
+
+void my_sh_update_background() {
+    int stat;
+
+    if (background_pid->len > 0) {
+        for (int i = 0; i < background_pid->len; ++i) {
+            waitpid(background_pid->array[i], &stat, WNOHANG);
+            if (WIFEXITED(stat)) {
+                removeAtIndex(background_pid, i);
+                removeAtIndexG(background_command, i);
+
+                i = -1;
+            }
+        }
+    }
 }
 

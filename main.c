@@ -6,7 +6,7 @@
 #include <string.h>
 #include <readline/readline.h>
 
-#include "decod.h"
+#include "decode.h"
 #include "execute.h"
 #include "list.h"
 #include "builtin.h"
@@ -121,10 +121,11 @@ _Noreturn void my_sh_loop() {
     do {
         current_pid = -1;
         last_pid = -1;
+        my_sh_update_background();
 
         line = prompt();
 
-        char *new_line = my_sh_decod_line(line);
+        char *new_line = my_sh_decode_line(line);
         int save = line[0] != ' ';
 
         my_sh_execute(new_line, save, 1);

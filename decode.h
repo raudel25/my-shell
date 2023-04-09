@@ -9,12 +9,12 @@
 
 char **my_sh_split_line(char *line, char *split);
 
-char *my_sh_decod_line(char *line);
+char *my_sh_decode_line(char *line);
 
-char *sub_str(char *line, int init, int end);
+char *sub_str(const char *line, int init, int end);
 
-void my_sh_decod_set(char *line);
+void my_sh_decode_set(char *line);
 
 int array_size(char **args);
 
-void my_sh_encod_set(char *line);
+void my_sh_encode_set(char *line);
