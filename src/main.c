@@ -101,14 +101,6 @@ void my_sh_ctrl_c() {
         return;
     }
 
-    for (int i = 0; i < pipes_pid->len; i++) {
-        if (current_pid == last_pid) {
-            kill(pipes_pid->array[i], SIGINT);
-        } else {
-            kill(pipes_pid->array[i], SIGKILL);
-        }
-    }
-
     if (current_pid == last_pid) {
         kill(current_pid, SIGINT);
     } else {
@@ -147,7 +139,6 @@ int main() {
     uid = getuid();
     pw = getpwuid(uid);
 
-    pipes_pid = createList();
     background_pid = createList();
     background_command = createListG();
     my_sh_init_variables();

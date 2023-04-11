@@ -18,8 +18,6 @@
 #define MY_SH_TOK_BUF_SIZE 1024
 
 
-List *pipes_pid = NULL;
-
 int redirect_instr(char *args) {
     if (strcmp(args, "<") == 0)
         return 0;
@@ -72,7 +70,7 @@ int redirect_in(char *fileName) {
     return fd;
 }
 
-int my_sh_launch(char **args, int init, int end, int fd_in, int fd_out, int fd_next) {
+int my_sh_launch(char **args, int init, int end, int fd_in, int fd_out) {
     pid_t pid;
     int status = 0;
 
@@ -109,7 +107,6 @@ int my_sh_launch(char **args, int init, int end, int fd_in, int fd_out, int fd_n
     } else if (pid < 0) {
         perror(ERROR);
     } else {
-        append(pipes_pid, pid);
 
         if (fd_in != -1) {
             close(fd_in);
@@ -118,23 +115,16 @@ int my_sh_launch(char **args, int init, int end, int fd_in, int fd_out, int fd_n
             close(fd_out);
         }
 
-        if (fd_next == -1) {
-            for (int i = 0; i < pipes_pid->len; ++i) {
-                current_pid = pipes_pid->array[i];
-                do {
-                    int c_pid = pipes_pid->array[i];
-                    waitpid(c_pid, &status, WUNTRACED);
-                } while (!WIFEXITED(status) && !WIFSIGNALED(status));
-            }
+        do {
+            waitpid(pid, &status, WUNTRACED);
+        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
 
-            clear(pipes_pid);
-        }
     }
 
     return status;
 }
 
-int my_sh_launch_not_out(char **args, int init, int end) {
+int my_sh_launch_not_out(char **args, int init, int end, int fd_in, int fd_out) {
     char *new_args[end - init];
 
     for (int i = init; i < end; i++) {
@@ -145,6 +135,10 @@ int my_sh_launch_not_out(char **args, int init, int end) {
 
     for (int i = 0; i < my_sh_num_builtins(); i++) {
         if (strcmp(new_args[0], builtin_str[i]) == 0) {
+
+            if (fd_in != -1) close(fd_in);
+            if (fd_out != -1) close(fd_out);
+
             return (*builtin_func[i])(new_args);
         }
     }
@@ -403,22 +397,24 @@ int my_sh_execute_pipes(char **args) {
     fd[2] = -1;
     int aux[2];
     int init = 0;
-    int result;
+    int status;
 
     while (1) {
         my_sh_new_args(init, args, fd[2], fd, aux);
         int end = aux[0];
 
-        result = my_sh_launch_not_out(args, init, end);
+        int c_status = my_sh_launch_not_out(args, init, end, fd[0], fd[1]);
 
-        if (result == -1) {
-            result = my_sh_launch(args, init, end, fd[0], fd[1], fd[2]);
+        if (c_status == -1) {
+            c_status = my_sh_launch(args, init, end, fd[0], fd[1]);
         }
+
+        if (c_status != 0) status = c_status;
 
         init = aux[1];
         if (args[end] == NULL || args[init] == NULL)
             break;
     }
 
-    return result;
+    return status;
 }

@@ -9,8 +9,6 @@
 
 #include "list.h"
 
-extern List *pipes_pid;
-
 int my_sh_execute(char *new_line, int save, int possible_back);
 
 int my_sh_execute_pipes(char **args);
