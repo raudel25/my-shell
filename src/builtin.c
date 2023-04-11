@@ -528,6 +528,7 @@ void my_sh_update_background() {
         for (int i = 0; i < background_pid->len; ++i) {
             waitpid(background_pid->array[i], &stat, WNOHANG);
             if (WIFEXITED(stat)) {
+                printf("[%d]\tDone\t%d\t%s\n", i + 1, background_pid->array[i], (char *) background_command->array[i]);
                 removeAtIndex(background_pid, i);
                 removeAtIndexG(background_command, i);
 
