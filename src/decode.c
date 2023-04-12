@@ -39,8 +39,8 @@ void my_sh_encode_set(char *line) {
     int c_set = 0;
 
     for (int i = 0; i < strlen(line); i++) {
-        if (i > 0 && line[i - 1] == ' ' && line[i] == '`') c_set++;
-        if (i > 0 && line[i - 1] != ' ' && line[i] == '`') c_set--;
+        if (i > 0 && (line[i - 1] == ' ' || line[i - 1] == '#') && line[i] == '`') c_set++;
+        if (i > 0 && (line[i - 1] != ' ' && line[i - 1] != '#') && line[i] == '`') c_set--;
 
         if (c_set != 0) {
             if (line[i] == ' ') line[i] = '#';
