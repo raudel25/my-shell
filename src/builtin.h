@@ -5,8 +5,6 @@
 #ifndef SHELL_BUILTIN_H
 #define SHELL_BUILTIN_H
 
-#endif //SHELL_BUILTIN_H
-
 #include "list.h"
 #include "glist.h"
 
@@ -71,3 +69,5 @@ int my_sh_background(char *line);
 char *my_sh_again(char *line);
 
 void my_sh_update_background();
+
+#endif //SHELL_BUILTIN_H

@@ -380,32 +380,32 @@ int my_sh_set(char **args) {
                 if (new_command != NULL) {
                     char *new_command_format = my_sh_decode_line(new_command);
 
+                    char *buffer = (char *) malloc(MY_SH_TOK_BUF_SIZE);
+                    char c = 1;
+                    int i = 0;
+                    fflush(stdout);
+
+                    int temp_stdout;
+                    temp_stdout = dup(fileno(stdout));
+
                     int fd[2];
                     pipe(fd);
+                    dup2(fd[1], fileno(stdout));
 
-                    pid_t pid;
+                    my_sh_execute(new_command_format, 0, 1);
 
-                    pid = fork();
-                    if (pid == 0) {
-                        dup2(fd[1], STDOUT_FILENO);
-                        close(fd[1]);
-                        close(fd[0]);
-
-                        exit(my_sh_execute(new_command_format, 0, 1));
-                    } else if (pid > 0) {
-                        do {
-                            waitpid(pid, &status, WUNTRACED);
-                        } while (!WIFEXITED(status) && !WIFSIGNALED(status));
-                    }
-                    char *buffer = (char *) malloc(MY_SH_TOK_BUF_SIZE);
-
+                    write(fd[1], "", 1);
                     close(fd[1]);
 
-                    char c;
-                    int i = 0;
+                    fflush(stdout);
+                    dup2(temp_stdout, fileno(stdout));
+                    close(temp_stdout);
 
-                    while (read(fd[0], &c, 1) > 0) {
+                    while (1) {
+                        read(fd[0], &c, 1);
                         buffer[i] = c;
+                        if (c == 0)
+                            break;
                         i++;
                         if (i % MY_SH_TOK_BUF_SIZE == 0) {
                             buffer = (char *) realloc(buffer, i * 2);
