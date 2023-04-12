@@ -15,11 +15,6 @@ char **my_sh_split_line(char *line, char *split) {
     char **tokens = malloc(buf_size * sizeof(char *));
     char *token;
 
-    if (!tokens) {
-        fprintf(stderr, "my_sh: allocation error\n");
-        exit(EXIT_FAILURE);
-    }
-
     token = strtok(line, split);
     while (token != NULL) {
         tokens[position] = token;
@@ -54,7 +49,7 @@ void my_sh_encode_set(char *line) {
 }
 
 char *my_sh_decode_line(char *line) {
-    char *aux_line = (char *) malloc(sizeof(char) * 3 * strlen(line));
+    char aux_line[strlen(line)];
 
     int len = (int) strlen(line);
     int j = 0;
@@ -156,12 +151,11 @@ char *my_sh_decode_line(char *line) {
         aux_line[j++] = line[i];
     }
 
-    char *new_line = (char *) malloc((j + 1) * sizeof(char));
+    char *new_line = (char *) malloc(MY_SH_TOK_BUF_SIZE);
 
     for (int x = 0; x < j; x++) {
         new_line[x] = aux_line[x];
     }
-    free(aux_line);
 
     if (new_line[j - 1] != '\n') new_line[j++] = '\n';
     new_line[j] = 0;

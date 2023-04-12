@@ -397,7 +397,7 @@ int my_sh_execute_pipes(char **args) {
     fd[2] = -1;
     int aux[2];
     int init = 0;
-    int status;
+    int status = 0;
 
     while (1) {
         my_sh_new_args(init, args, fd[2], fd, aux);
