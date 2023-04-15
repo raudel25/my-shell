@@ -11,7 +11,6 @@
 #include "decode.h"
 #include "builtin.h"
 #include "execute.h"
-#include "list.h"
 
 #define MY_SH_TOK_DELIM " \t\r\n\a"
 #define ERROR "\033[1;31mmy_sh\033[0m"
@@ -195,7 +194,7 @@ void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
 
 void my_sh_execute_save(char **args, char *line, int save) {
     if (strcmp(args[0], "exit") == 0) save = 0;
-    if (save) save_history(line);
+    if (save) my_sh_save_history(line);
 }
 
 int my_sh_execute_chain(char **args, char *line) {

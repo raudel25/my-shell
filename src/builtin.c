@@ -30,7 +30,9 @@ int last_pid;
 
 List *background_pid = NULL;
 
-GList *background_command = NULL;
+char *history[MY_SH_MAX_HISTORY];
+
+int history_len;
 
 char *variables[26];
 
@@ -138,110 +140,83 @@ int my_sh_exit() {
     exit(EXIT_SUCCESS);
 }
 
-void save_history(char *line) {
-    char *end_ptr = 0;
+void my_sh_save_history(char *line) {
+    if (history_len == MY_SH_MAX_HISTORY) {
+        char *aux = history[0];
+        for (int i = 1; i < history_len; i++) {
+            history[i - 1] = history[i];
+        }
+        history_len--;
+
+        history[history_len] = aux;
+    }
+
+    strcpy(history[history_len++], line);
+
     char *path = my_sh_path_history();
-
-    int fd = (int) strtol(path, &end_ptr, 10);
-
-    if (*(end_ptr + 1) != '\0') {
-        fd = open(path, O_RDONLY);
+    int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
+    for (int i = 0; i < history_len; i++) {
+        write(fd, history[i], strlen(history[i]));
     }
-
-    char *buffer = (char *) malloc(MY_SH_TOK_BUF_SIZE);
-    read(fd, buffer, MY_SH_TOK_BUF_SIZE);
+    write(fd, "\n", 1);
     close(fd);
-
-    if (*(end_ptr + 1) != '\0') {
-        fd = open(path, O_WRONLY | O_TRUNC | O_CREAT, 0600);
-    }
-
-    char *aux = (char *) malloc(3 * MY_SH_TOK_BUF_SIZE);
-    strcpy(aux, "#");
-    strcat(aux, line);
-    strcat(aux, buffer);
-
-    int j = 0;
-    int i;
-    for (i = 0; i < strlen(aux); i++) {
-        if (aux[i] == '\n') j++;
-        if (j == MY_SH_MAX_HISTORY) break;
-    }
-
-    if (j == MY_SH_MAX_HISTORY) aux[i + 1] = 0;
-
-    write(fd, aux, strlen(aux));
-    close(fd);
-
-    free(buffer);
-    free(aux);
-    free(path);
 }
 
-char **get_history() {
-    char *buffer = (char *) malloc(MY_SH_TOK_BUF_SIZE);
-    char *path = my_sh_path_history();
-
-    char *end_ptr = 0;
-
-    int fd = (int) strtol(path, &end_ptr, 10);
-
-    if (*(end_ptr + 1) != '\0') {
-        fd = open(path, O_RDONLY);
+void my_sh_load_history() {
+    for(int i=0;i<MY_SH_MAX_HISTORY;i++){
+        history[i]=(char *) malloc(MY_SH_TOK_BUF_SIZE);
     }
 
-    read(fd, buffer, MY_SH_TOK_BUF_SIZE);
-    close(fd);
+    char *path = my_sh_path_history();
+
+    int status = 0;
+    FILE *file;
+    file = fopen(path, "r");
+    int i = 0;
+    if (file != NULL) {
+        while (status != -1) {
+            char *line = NULL;
+            size_t buf_size = 0;
+            status = (int) getline(&line, &buf_size, file);
+            if (status == -1) {
+                i--;
+                free(line);
+                continue;
+            }
+            if (i == MY_SH_MAX_HISTORY) break;
+
+            strcpy(history[i], line);
+            free(line);
+            i++;
+        }
+        history_len = i;
+        fclose(file);
+    }
 
     free(path);
-    char **args = my_sh_split_line(buffer, "\t\r\n\a");
-
-    return args;
 }
 
 int my_sh_history() {
-    char **args = get_history();
-
-    int i;
-    for (i = 0; args[i] != NULL; i++) {
-        if (args[i][0] != '#') break;
+    for (int j = 0; j < history_len; j++) {
+        printf("%d: %s", j + 1, history[j]);
     }
-
-    int top = i < MY_SH_MAX_HISTORY ? i : MY_SH_MAX_HISTORY;
-    for (int j = 0; j < top; j++) {
-        char *aux = sub_str(args[top - 1 - j], 1, (int) strlen(args[top - 1 - j]) - 1);
-        printf("%d: %s\n", j + 1, aux);
-        free(aux);
-    }
-
-    free(args);
 
     return 0;
 }
 
-char *get_again(int ind, int last) {
-    char **args = get_history();
+char *my_sh_get_again(int ind, int last) {
     char *again = NULL;
+    if (last) ind = history_len;
 
-    int i;
-    for (i = 0; args[i] != NULL; i++) {
-        if (args[i][0] != '#') break;
-    }
-
-    int top = i < MY_SH_MAX_HISTORY ? i : MY_SH_MAX_HISTORY;
-    if (last) ind = top;
-
-    for (int j = 0; j < top; j++) {
+    for (int j = 0; j < history_len; j++) {
         if (ind == j + 1) {
-            char *aux = sub_str(args[top - 1 - j], 1, (int) strlen(args[top - 1 - j]) - 1);
+            char *aux = sub_str(history[j], 0,
+                                (int) strlen(history[j]) - 2);
             again = (char *) malloc(sizeof(char) * (strlen(aux) + 1));
             strcpy(again, aux);
             strcat(again, "\n");
-            free(aux);
         }
     }
-
-    free(args);
 
     return again;
 }
@@ -305,14 +280,13 @@ int my_sh_foreground(char **args) {
     } while (!WIFEXITED(status) && !WIFSIGNALED(status));
 
     removeAtIndex(background_pid, index);
-    removeAtIndexG(background_command, index);
 
     return status;
 }
 
 int my_sh_jobs() {
     for (int i = 0; i < background_pid->len; i++) {
-        printf("[%d]\t%s\t%d\n", i + 1, (char *) background_command->array[i], background_pid->array[i]);
+        printf("[%d]\t%d\n", i + 1, background_pid->array[i]);
     }
 
     return 0;
@@ -464,8 +438,8 @@ int my_sh_background(char *line) {
     } else if (pid > 0) {
         setpgid(pid, pid);
         append(background_pid, pid);
-        appendG(background_command, new_line);
         printf("[%d]\t%d\n", background_pid->len, pid);
+        free(new_line);
     }
 
     return 0;
@@ -493,7 +467,7 @@ char *my_sh_again(char *line) {
                 else i++;
             } else last = 1;
 
-            char *c_again = get_again(q, last);
+            char *c_again = my_sh_get_again(q, last);
 
             if (c_again != NULL) {
                 c_again[strlen(c_again)-1]=0;
@@ -522,15 +496,14 @@ char *my_sh_again(char *line) {
 }
 
 void my_sh_update_background() {
-    int stat;
+    int status;
 
     if (background_pid->len > 0) {
         for (int i = 0; i < background_pid->len; ++i) {
-            waitpid(background_pid->array[i], &stat, WNOHANG);
-            if (WIFEXITED(stat)) {
-                printf("[%d]\tDone\t%d\t%s\n", i + 1, background_pid->array[i], (char *) background_command->array[i]);
+            waitpid(background_pid->array[i], &status, WNOHANG);
+            if (WIFEXITED(status)) {
+                printf("[%d]\tDone\t%d\n", i + 1, background_pid->array[i]);
                 removeAtIndex(background_pid, i);
-                removeAtIndexG(background_command, i);
 
                 i = -1;
             }

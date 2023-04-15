@@ -5,8 +5,9 @@
 #ifndef SHELL_BUILTIN_H
 #define SHELL_BUILTIN_H
 
+#define MY_SH_MAX_HISTORY 20
+
 #include "list.h"
-#include "glist.h"
 
 extern int current_pid;
 
@@ -14,7 +15,9 @@ extern int last_pid;
 
 extern List *background_pid;
 
-extern GList *background_command;
+extern char *history[MY_SH_MAX_HISTORY];
+
+extern int history_len;
 
 extern char *variables[26];
 
@@ -42,13 +45,11 @@ void my_sh_init_variables();
 
 int check_variable(char *variable);
 
-void save_history(char *line);
+void my_sh_save_history(char *line);
 
 int my_sh_history();
 
-char **get_history();
-
-char *get_again(int ind, int last);
+void my_sh_load_history();
 
 int my_sh_unset(char **args);
 

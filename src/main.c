@@ -10,26 +10,23 @@
 #include "execute.h"
 #include "list.h"
 #include "builtin.h"
-#include "glist.h"
 
 #define BOLD_CYAN "\033[1;36m"
 #define RESET "\033[0m"
 #define BOLD_RED "\033[1;31m"
 
 #define MY_SH_TOK_DELIM " \t\r\n\a"
-#define MY_SH_MAX_HISTORY 20
 
 int current_command;
-char **history;
-int top;
 
 void command_change() {
-    int len = (int) strlen(history[top - current_command]) - 1;
+    int len = (int) strlen(history[current_command]);
+
     char c[len];
 
     int i;
-    for (i = 0; i < len; i++) {
-        c[i] = history[top - current_command][i + 1];
+    for (i = 0; i < len - 1; i++) {
+        c[i] = ((char *) history[current_command])[i];
     }
     c[i] = 0;
 
@@ -38,26 +35,13 @@ void command_change() {
     rl_redisplay();
 }
 
-
-void load_history() {
-    history = get_history();
-
-    int i;
-    for (i = 0; history[i] != NULL; i++) {
-        if (history[i][0] != '#') break;
-    }
-
-    top = i < MY_SH_MAX_HISTORY ? i : MY_SH_MAX_HISTORY;
-    current_command = -1;
-}
-
 static int up_arrow_callback() {
-    if (current_command != 1 && current_command != -1 && top != 0) {
+    if (current_command != 0 && current_command != -1 && history_len != 0) {
         current_command--;
         command_change();
     }
-    if (current_command == -1 && top != 0) {
-        current_command = top;
+    if (current_command == -1 && history_len != 0) {
+        current_command = history_len - 1;
         command_change();
     }
 
@@ -65,7 +49,7 @@ static int up_arrow_callback() {
 }
 
 static int down_arrow_callback() {
-    if (current_command != top && current_command != -1 && top != 0) {
+    if (current_command != history_len - 1 && current_command != -1 && history_len != 0) {
         current_command++;
         command_change();
     }
@@ -73,8 +57,7 @@ static int down_arrow_callback() {
 }
 
 char *prompt() {
-    load_history();
-
+    current_command = -1;
     char *line = NULL;
     rl_bind_keyseq("\\e[A", up_arrow_callback);
     rl_bind_keyseq("\\e[B", down_arrow_callback);
@@ -86,7 +69,6 @@ char *prompt() {
 
     line = readline(head);
 
-    free(history);
     return line;
 }
 
@@ -140,8 +122,8 @@ int main() {
     pw = getpwuid(uid);
 
     background_pid = createList();
-    background_command = createListG();
     my_sh_init_variables();
+    my_sh_load_history();
 
     signal(SIGINT, my_sh_ctrl_c);
 
