@@ -263,78 +263,41 @@ void my_sh_execute_save(char **args, char *line, int save) {
 //    return global_status;
 //}
 
-//int my_sh_conditional(char **args, char *line) {
-//    int p = 0;
-//
-//    int ind_then = -1;
-//    int ind_else = -1;
-//    int ind_end;
-//
-//    int error = 0;
-//
-//    char *c_condition;
-//    char *c_then;
-//    char *c_else;
-//
-//    int i;
-//    int j;
-//    for (i = 1; args[i] != NULL; i++) {
-//        if (strcmp(args[i], "then") == 0 && p == 0) ind_then = i;
-//        if (strcmp(args[i], "else") == 0 && p == 0) ind_else = i;
-//        if (strcmp(args[i], "end") == 0 && p == 0) ind_end = i;
-//        if (strcmp(args[i], "if") == 0) p++;
-//        if (strcmp(args[i], "end") == 0) p--;
-//    }
-//
-//    if (ind_end != i - 1 || ind_then == -1) error = 1;
-//    if (ind_then < 2 || ind_end - ind_then < 2) error = 1;
-//    if (ind_else != -1 && (ind_else - ind_then < 2 || ind_end - ind_else < 2)) error = 1;
-//
-//    if (error) {
-//        fprintf(stderr, "%s: incorrect conditional\n", ERROR);
-//        return 1;
-//    }
-//
-//    int size_total = 3;
-//
-//    j = 0;
-//    for (i = 1; i < ind_then; i++) {
-//        j += ((int) strlen(args[i]) + 1);
-//    }
-//    c_condition = sub_str(line, size_total, j + size_total - 2);
-//    size_total += (j + 5);
-//
-//    if (ind_else != -1) {
-//        j = 0;
-//        for (i = ind_then + 1; i < ind_else; i++) {
-//            j += ((int) strlen(args[i]) + 1);
-//        }
-//        c_then = sub_str(line, size_total, j + size_total - 2);
-//        size_total += (j + 5);
-//
-//        j = 0;
-//        for (i = ind_else + 1; i < ind_end; i++) {
-//            j += ((int) strlen(args[i]) + 1);
-//        }
-//        c_else = sub_str(line, size_total, j + size_total - 2);
-//    } else {
-//        j = 0;
-//        for (i = ind_then + 1; i < ind_end; i++) {
-//            j += ((int) strlen(args[i]) + 1);
-//        }
-//        c_then = sub_str(line, size_total, j + size_total - 2);
-//    }
-//
-//    int status = !my_sh_execute(c_condition, 0, 0);
-//
-//    if (status) {
-//        return my_sh_execute(c_then, 0, 0);
-//    } else if (ind_else != -1) {
-//        return my_sh_execute(c_else, 0, 0);
-//    }
-//
-//    return 1;
-//}
+int my_sh_conditional(char **args, int ind_if, int ind_then, int ind_else, int ind_end, int fd_out) {
+
+    int temp_stdout;
+
+    if (fd_out != -1) {
+        fflush(stdout);
+
+        temp_stdout = dup(fileno(stdout));
+
+        dup2(fd_out, fileno(stdout));
+        close(fd_out);
+    }
+
+    int status = my_sh_parser(args, ind_if + 1, ind_then, -1, -1);
+
+    if (ind_else != -1) {
+        if (!status) {
+            status = my_sh_parser(args, ind_then + 1, ind_else, -1, -1);
+        } else {
+            status = my_sh_parser(args, ind_else + 1, ind_end, -1, -1);
+        }
+    } else {
+        if (!status) {
+            status = my_sh_parser(args, ind_then + 1, ind_end, -1, -1);
+        }
+    }
+
+    if (fd_out != -1) {
+        fflush(stdout);
+        dup2(temp_stdout, fileno(stdout));
+        close(temp_stdout);
+    }
+
+    return status;
+}
 
 int my_sh_execute(char *line, int save, int possible_back) {
     char *new_line = my_sh_again(line);
@@ -407,7 +370,7 @@ int my_sh_redirect_in(char **args, int init, int end, int fd_out, int pos) {
         if (fd_out != -1) {
             close(fd_out);
         }
-        fprintf(stderr, "my_sh: incorrect command redirect\n");
+        fprintf(stderr, "%s: incorrect command pipe\n", ERROR);
         return 1;
     }
 
@@ -421,7 +384,7 @@ int my_sh_redirect_out(char **args, int init, int end, int fd_in, int pos) {
         if (fd_in != -1) {
             close(fd_in);
         }
-        fprintf(stderr, "my_sh: incorrect command redirect\n");
+        fprintf(stderr, "%s: incorrect command pipe\n", ERROR);
         return 1;
     }
 
@@ -435,7 +398,7 @@ int my_sh_redirect_out_append(char **args, int init, int end, int fd_in, int pos
         if (fd_in != -1) {
             close(fd_in);
         }
-        fprintf(stderr, "my_sh: incorrect command pipe\n");
+        fprintf(stderr, "%s: incorrect command pipe\n", ERROR);
         return 1;
     }
 
@@ -452,7 +415,7 @@ int my_sh_pipes(char **args, int init, int end, int fd_in, int fd_out, int pos) 
         if (fd_out != -1) {
             close(fd_out);
         }
-        fprintf(stderr, "my_sh: incorrect command redirect\n");
+        fprintf(stderr, "%s: incorrect command pipes\n", ERROR);
         return 1;
     }
     int fd[2];
@@ -466,7 +429,7 @@ int my_sh_pipes(char **args, int init, int end, int fd_in, int fd_out, int pos) 
 
 int my_sh_and_or(char **args, int init, int end, int pos, int and) {
     if (init == pos || end - 1 == pos) {
-        fprintf(stderr, "my_sh: incorrect command chain\n");
+        fprintf(stderr, "%s: incorrect command chain\n", ERROR);
         return 1;
     }
     int status = my_sh_parser(args, init, pos, -1, -1);
@@ -496,12 +459,63 @@ int my_sh_multiple(char **args, int init, int end, int pos) {
     return status1 | status2;
 }
 
+int my_sh_conditional_execute(char **args, int init, int end, int fd_in, int fd_out) {
+    int p = 0;
+
+    int ind_then = -1;
+    int ind_else = -1;
+    int ind_end;
+
+    int error = 0;
+
+    int i;
+    for (i = init + 1; i < end; i++) {
+        if (strcmp(args[i], "then") == 0 && p == 0) ind_then = i;
+        if (strcmp(args[i], "else") == 0 && p == 0) ind_else = i;
+        if (strcmp(args[i], "end") == 0 && p == 0) ind_end = i;
+        if (strcmp(args[i], "if") == 0) p++;
+        if (strcmp(args[i], "end") == 0) p--;
+    }
+
+    if (ind_end == -1 || ind_then == -1) error = 1;
+    if (ind_then - init < 2 || ind_end - ind_then < 2) error = 1;
+    if (ind_else != -1 && (ind_else - ind_then < 2 || ind_end - ind_else < 2)) error = 1;
+
+    if (error) {
+        if (fd_out != -1) {
+            close(fd_out);
+        }
+        fprintf(stderr, "%s: incorrect conditional\n", ERROR);
+        return 1;
+    }
+
+    if (ind_end == end - 1) {
+        return my_sh_conditional(args, init, ind_then, ind_else, ind_end, fd_out);
+    }
+
+    int status1 = my_sh_conditional(args, init, ind_then, ind_else, ind_end, fd_out);
+    int status2 = my_sh_parser(args, ind_end + 1, end, fd_in, fd_out);
+
+    return status1 | status2;
+}
+
 int my_sh_parser(char **args, int init, int end, int fd_in, int fd_out) {
-    int ind = 0;
+    int ind = init;
     int priority = 0;
+    int c_cond = 0;
 
     for (int i = init; i < end; i++) {
         int aux_priority = 0;
+
+        if (strcmp(args[i], "if") == 0) {
+            c_cond++;
+        }
+        if (strcmp(args[i], "end") == 0) {
+            c_cond--;
+        }
+        if (c_cond != 0 || strcmp(args[i], "if") == 0 || strcmp(args[i], "end") == 0) {
+            continue;
+        }
 
         if (strcmp(args[i], "<") == 0) aux_priority = 1;
         if (strcmp(args[i], "|") == 0) aux_priority = 2;
@@ -539,6 +553,9 @@ int my_sh_parser(char **args, int init, int end, int fd_in, int fd_out) {
     if (strcmp(args[ind], ";") == 0) {
         return my_sh_multiple(args, init, end, ind);
     };
+    if (strcmp(args[ind], "if") == 0) {
+        return my_sh_conditional_execute(args, init, end, fd_in, fd_out);
+    }
 //    if (strcmp(args[ind], "&") == 0) aux_priority = 6;
 
     return my_sh_execute_simple(args, init, end, fd_in, fd_out);
