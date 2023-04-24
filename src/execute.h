@@ -11,4 +11,6 @@ int my_sh_execute(char *new_line, int save, int possible_back);
 
 int my_sh_execute_pipes(char **args);
 
+int my_sh_parser(char **args, int init, int end,int fd_int,int fd_out);
+
 #endif //SHELL_EXECUTE_H

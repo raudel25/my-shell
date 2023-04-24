@@ -145,200 +145,199 @@ int my_sh_launch_not_out(char **args, int init, int end, int fd_in, int fd_out) 
     return -1;
 }
 
-void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
-    fd[0] = fd_in != -1 ? fd_in : -1;
-    fd[1] = -1;
-    fd[2] = -1;
-
-    int k = init;
-    int instr = -1;
-
-    while (args[k] != NULL) {
-        instr = redirect_instr(args[k]);
-        if (instr != -1)
-            break;
-
-        k++;
-    }
-
-    aux[0] = k;
-    aux[1] = k + 1;
-
-    if (instr == 0) {
-        fd[0] = redirect_in(args[k + 1]);
-
-        if (args[k + 2] != NULL) {
-            instr = redirect_instr(args[k + 2]);
-            if (instr == 1 || instr == 2) k += 2;
-            if (instr == 3) k++;
-        }
-
-        aux[1] = k + 2;
-    }
-    if (instr == 1) {
-        fd[1] = redirect_out(args[k + 1]);
-        aux[1] = k + 2;
-    }
-    if (instr == 2) {
-        fd[1] = redirect_out_append(args[k + 1]);
-        aux[1] = k + 2;
-    }
-    if (instr == 3) {
-        int fd1[2];
-        pipe(fd1);
-
-        fd[1] = fd1[1];
-        fd[2] = fd1[0];
-    }
-}
+//void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
+//    fd[0] = fd_in != -1 ? fd_in : -1;
+//    fd[1] = -1;
+//    fd[2] = -1;
+//
+//    int k = init;
+//    int instr = -1;
+//
+//    while (args[k] != NULL) {
+//        instr = redirect_instr(args[k]);
+//        if (instr != -1)
+//            break;
+//
+//        k++;
+//    }
+//
+//    aux[0] = k;
+//    aux[1] = k + 1;
+//
+//    if (instr == 0) {
+//        fd[0] = redirect_in(args[k + 1]);
+//
+//        if (args[k + 2] != NULL) {
+//            instr = redirect_instr(args[k + 2]);
+//            if (instr == 1 || instr == 2) k += 2;
+//            if (instr == 3) k++;
+//        }
+//
+//        aux[1] = k + 2;
+//    }
+//    if (instr == 1) {
+//        fd[1] = redirect_out(args[k + 1]);
+//        aux[1] = k + 2;
+//    }
+//    if (instr == 2) {
+//        fd[1] = redirect_out_append(args[k + 1]);
+//        aux[1] = k + 2;
+//    }
+//    if (instr == 3) {
+//        int fd1[2];
+//        pipe(fd1);
+//
+//        fd[1] = fd1[1];
+//        fd[2] = fd1[0];
+//    }
+//}
 
 void my_sh_execute_save(char **args, char *line, int save) {
-    if (strcmp(args[0], "exit") == 0) save = 0;
     if (save) my_sh_save_history(line);
 }
 
-int my_sh_execute_chain(char **args, char *line) {
-    int global_status = -1;
-    int status;
-    int execute = 1;
+//int my_sh_execute_chain(char **args, char *line) {
+//    int global_status = -1;
+//    int status;
+//    int execute = 1;
+//
+//    int last = 0;
+//    int i;
+//    int j = 0;
+//    for (i = 0; args[i] != NULL; i++) {
+//        j += ((int) strlen(args[i]) + 1);
+//
+//        if (args[i][strlen(args[i]) - 1] == ';') {
+//            if (global_status == -1) global_status = 1;
+//
+//            if (execute) {
+//                char *aux = sub_str(line, last, j - 3);
+//                status = !my_sh_execute(aux, 0, 0);
+//                free(aux);
+//            }
+//
+//            execute = 1;
+//            last = j;
+//            global_status = status && global_status;
+//        }
+//
+//        if (strcmp(args[i], "&&") == 0) {
+//            if (global_status == -1) global_status = 1;
+//
+//            if (execute) {
+//                char *aux = sub_str(line, last, j - 5);
+//                status = !my_sh_execute(aux, 0, 0);
+//                free(aux);
+//
+//                execute = status;
+//            }
+//
+//            last = j;
+//        }
+//
+//        if (strcmp(args[i], "||") == 0) {
+//            if (global_status == -1) global_status = 1;
+//
+//            if (execute) {
+//                char *aux = sub_str(line, last, j - 5);
+//                status = !my_sh_execute(aux, 0, 0);
+//                free(aux);
+//
+//                execute = !status;
+//            }
+//
+//            last = j;
+//        }
+//    }
+//
+//    if (global_status != -1) {
+//        if (execute && args[i - 1][strlen(args[i - 1]) - 1] != ';') {
+//            char *aux = sub_str(line, last, j - 2);
+//            status = !my_sh_execute(aux, 0, 0);
+//            free(aux);
+//        }
+//
+//        return !(status && global_status);
+//    }
+//
+//    return global_status;
+//}
 
-    int last = 0;
-    int i;
-    int j = 0;
-    for (i = 0; args[i] != NULL; i++) {
-        j += ((int) strlen(args[i]) + 1);
-
-        if (args[i][strlen(args[i]) - 1] == ';') {
-            if (global_status == -1) global_status = 1;
-
-            if (execute) {
-                char *aux = sub_str(line, last, j - 3);
-                status = !my_sh_execute(aux, 0, 0);
-                free(aux);
-            }
-
-            execute = 1;
-            last = j;
-            global_status = status && global_status;
-        }
-
-        if (strcmp(args[i], "&&") == 0) {
-            if (global_status == -1) global_status = 1;
-
-            if (execute) {
-                char *aux = sub_str(line, last, j - 5);
-                status = !my_sh_execute(aux, 0, 0);
-                free(aux);
-
-                execute = status;
-            }
-
-            last = j;
-        }
-
-        if (strcmp(args[i], "||") == 0) {
-            if (global_status == -1) global_status = 1;
-
-            if (execute) {
-                char *aux = sub_str(line, last, j - 5);
-                status = !my_sh_execute(aux, 0, 0);
-                free(aux);
-
-                execute = !status;
-            }
-
-            last = j;
-        }
-    }
-
-    if (global_status != -1) {
-        if (execute && args[i - 1][strlen(args[i - 1]) - 1] != ';') {
-            char *aux = sub_str(line, last, j - 2);
-            status = !my_sh_execute(aux, 0, 0);
-            free(aux);
-        }
-
-        return !(status && global_status);
-    }
-
-    return global_status;
-}
-
-int my_sh_conditional(char **args, char *line) {
-    int p = 0;
-
-    int ind_then = -1;
-    int ind_else = -1;
-    int ind_end;
-
-    int error = 0;
-
-    char *c_condition;
-    char *c_then;
-    char *c_else;
-
-    int i;
-    int j;
-    for (i = 1; args[i] != NULL; i++) {
-        if (strcmp(args[i], "then") == 0 && p == 0) ind_then = i;
-        if (strcmp(args[i], "else") == 0 && p == 0) ind_else = i;
-        if (strcmp(args[i], "end") == 0 && p == 0) ind_end = i;
-        if (strcmp(args[i], "if") == 0) p++;
-        if (strcmp(args[i], "end") == 0) p--;
-    }
-
-    if (ind_end != i - 1 || ind_then == -1) error = 1;
-    if (ind_then < 2 || ind_end - ind_then < 2) error = 1;
-    if (ind_else != -1 && (ind_else - ind_then < 2 || ind_end - ind_else < 2)) error = 1;
-
-    if (error) {
-        fprintf(stderr, "%s: incorrect conditional\n", ERROR);
-        return 1;
-    }
-
-    int size_total = 3;
-
-    j = 0;
-    for (i = 1; i < ind_then; i++) {
-        j += ((int) strlen(args[i]) + 1);
-    }
-    c_condition = sub_str(line, size_total, j + size_total - 2);
-    size_total += (j + 5);
-
-    if (ind_else != -1) {
-        j = 0;
-        for (i = ind_then + 1; i < ind_else; i++) {
-            j += ((int) strlen(args[i]) + 1);
-        }
-        c_then = sub_str(line, size_total, j + size_total - 2);
-        size_total += (j + 5);
-
-        j = 0;
-        for (i = ind_else + 1; i < ind_end; i++) {
-            j += ((int) strlen(args[i]) + 1);
-        }
-        c_else = sub_str(line, size_total, j + size_total - 2);
-    } else {
-        j = 0;
-        for (i = ind_then + 1; i < ind_end; i++) {
-            j += ((int) strlen(args[i]) + 1);
-        }
-        c_then = sub_str(line, size_total, j + size_total - 2);
-    }
-
-    int status = !my_sh_execute(c_condition, 0, 0);
-
-    if (status) {
-        return my_sh_execute(c_then, 0, 0);
-    } else if (ind_else != -1) {
-        return my_sh_execute(c_else, 0, 0);
-    }
-
-    return 1;
-}
+//int my_sh_conditional(char **args, char *line) {
+//    int p = 0;
+//
+//    int ind_then = -1;
+//    int ind_else = -1;
+//    int ind_end;
+//
+//    int error = 0;
+//
+//    char *c_condition;
+//    char *c_then;
+//    char *c_else;
+//
+//    int i;
+//    int j;
+//    for (i = 1; args[i] != NULL; i++) {
+//        if (strcmp(args[i], "then") == 0 && p == 0) ind_then = i;
+//        if (strcmp(args[i], "else") == 0 && p == 0) ind_else = i;
+//        if (strcmp(args[i], "end") == 0 && p == 0) ind_end = i;
+//        if (strcmp(args[i], "if") == 0) p++;
+//        if (strcmp(args[i], "end") == 0) p--;
+//    }
+//
+//    if (ind_end != i - 1 || ind_then == -1) error = 1;
+//    if (ind_then < 2 || ind_end - ind_then < 2) error = 1;
+//    if (ind_else != -1 && (ind_else - ind_then < 2 || ind_end - ind_else < 2)) error = 1;
+//
+//    if (error) {
+//        fprintf(stderr, "%s: incorrect conditional\n", ERROR);
+//        return 1;
+//    }
+//
+//    int size_total = 3;
+//
+//    j = 0;
+//    for (i = 1; i < ind_then; i++) {
+//        j += ((int) strlen(args[i]) + 1);
+//    }
+//    c_condition = sub_str(line, size_total, j + size_total - 2);
+//    size_total += (j + 5);
+//
+//    if (ind_else != -1) {
+//        j = 0;
+//        for (i = ind_then + 1; i < ind_else; i++) {
+//            j += ((int) strlen(args[i]) + 1);
+//        }
+//        c_then = sub_str(line, size_total, j + size_total - 2);
+//        size_total += (j + 5);
+//
+//        j = 0;
+//        for (i = ind_else + 1; i < ind_end; i++) {
+//            j += ((int) strlen(args[i]) + 1);
+//        }
+//        c_else = sub_str(line, size_total, j + size_total - 2);
+//    } else {
+//        j = 0;
+//        for (i = ind_then + 1; i < ind_end; i++) {
+//            j += ((int) strlen(args[i]) + 1);
+//        }
+//        c_then = sub_str(line, size_total, j + size_total - 2);
+//    }
+//
+//    int status = !my_sh_execute(c_condition, 0, 0);
+//
+//    if (status) {
+//        return my_sh_execute(c_then, 0, 0);
+//    } else if (ind_else != -1) {
+//        return my_sh_execute(c_else, 0, 0);
+//    }
+//
+//    return 1;
+//}
 
 int my_sh_execute(char *line, int save, int possible_back) {
-    char *new_line= my_sh_again(line);
+    char *new_line = my_sh_again(line);
 
     int status;
     char copy[strlen(new_line)];
@@ -356,34 +355,36 @@ int my_sh_execute(char *line, int save, int possible_back) {
 
     my_sh_execute_save(args, copy, save);
 
-    if (strcmp(args[array_size(args) - 1], "&") == 0 && possible_back) {
-        int q = my_sh_background(copy);
+//    if (strcmp(args[array_size(args) - 1], "&") == 0 && possible_back) {
+//        int q = my_sh_background(copy);
+//
+//        free(args);
+//        free(new_line);
+//
+//        return q;
+//    }
+//
+//    if (strcmp(args[0], "if") == 0) {
+//        int q = my_sh_conditional(args, copy);
+//
+//        free(args);
+//        free(new_line);
+//
+//        return q;
+//    }
+//
+//    int chain = my_sh_execute_chain(args, copy);
+//
+//    if (chain != -1) {
+//        free(args);
+//        free(new_line);
+//
+//        return chain;
+//    }
+//
+//    status = my_sh_execute_pipes(args);
 
-        free(args);
-        free(new_line);
-
-        return q;
-    }
-
-    if (strcmp(args[0], "if") == 0) {
-        int q = my_sh_conditional(args, copy);
-
-        free(args);
-        free(new_line);
-
-        return q;
-    }
-
-    int chain = my_sh_execute_chain(args, copy);
-
-    if (chain != -1) {
-        free(args);
-        free(new_line);
-
-        return chain;
-    }
-
-    status = my_sh_execute_pipes(args);
+    status = my_sh_parser(args, 0, array_size(args), -1, -1);
 
     free(args);
     free(new_line);
@@ -391,29 +392,111 @@ int my_sh_execute(char *line, int save, int possible_back) {
     return status;
 }
 
-int my_sh_execute_pipes(char **args) {
-    int fd[3];
-    fd[2] = -1;
-    int aux[2];
-    int init = 0;
-    int status = 0;
+int my_sh_execute_simple(char **args, int init, int end, int fd_int, int fd_out) {
+    int status = my_sh_launch_not_out(args, init, end, fd_int, fd_out);
 
-    while (1) {
-        my_sh_new_args(init, args, fd[2], fd, aux);
-        int end = aux[0];
-
-        int c_status = my_sh_launch_not_out(args, init, end, fd[0], fd[1]);
-
-        if (c_status == -1) {
-            c_status = my_sh_launch(args, init, end, fd[0], fd[1]);
-        }
-
-        if (c_status != 0) status = c_status;
-
-        init = aux[1];
-        if (args[end] == NULL || args[init] == NULL)
-            break;
+    if (status == -1) {
+        status = my_sh_launch(args, init, end, fd_int, fd_out);
     }
 
     return status;
 }
+
+int my_sh_redirect_in(char **args, int init, int end, int fd_out) {
+    int fd = redirect_in(args[end - 1]);
+
+    return my_sh_parser(args, init, end - 2, fd, fd_out);
+}
+
+int my_sh_redirect_out(char **args, int init, int end, int fd_in) {
+    int fd = redirect_out(args[end - 1]);
+
+    return my_sh_parser(args, init, end - 2, fd_in, fd);
+}
+
+int my_sh_redirect_out_append(char **args, int init, int end, int fd_in) {
+    int fd = redirect_out_append(args[end - 1]);
+
+    return my_sh_parser(args, init, end - 2, fd_in, fd);
+}
+
+int my_sh_pipes(char **args, int init, int end, int fd_in, int fd_out, int pos) {
+    int fd[2];
+    pipe(fd);
+
+    int status1 = my_sh_parser(args, init, pos, fd_in, fd[1]);
+    int status2 = my_sh_parser(args, pos + 1, end, fd[0], fd_out);
+
+    return status1 | status2;
+}
+
+int my_sh_parser(char **args, int init, int end, int fd_in, int fd_out) {
+    int ind = 0;
+    int priority = 0;
+
+    for (int i = init; i < end; i++) {
+        int aux_priority = 0;
+
+        if (strcmp(args[i], "<") == 0) aux_priority = 1;
+        if (strcmp(args[i], "|") == 0) aux_priority = 2;
+        if (strcmp(args[i], ">") == 0) aux_priority = 3;
+        if (strcmp(args[i], ">>") == 0) aux_priority = 3;
+        if (strcmp(args[i], "&&") == 0) aux_priority = 4;
+        if (strcmp(args[i], "||") == 0) aux_priority = 4;
+        if (strcmp(args[i], ";") == 0) aux_priority = 5;
+        if (strcmp(args[i], "&") == 0) aux_priority = 6;
+
+        if (aux_priority > priority) {
+            priority = aux_priority;
+            ind = i;
+        }
+    }
+
+    if (strcmp(args[ind], "<") == 0) {
+        return my_sh_redirect_in(args, init, end, fd_out);
+    }
+    if (strcmp(args[ind], "|") == 0) {
+        return my_sh_pipes(args, init, end, fd_in, fd_out, ind);
+    }
+    if (strcmp(args[ind], ">") == 0) {
+        return my_sh_redirect_out(args, init, end, fd_in);
+    };
+    if (strcmp(args[ind], ">") == 0) {
+        return my_sh_redirect_out_append(args, init, end, fd_in);
+    };
+//    if (strcmp(args[ind], "&&") == 0) aux_priority = 4;
+//    if (strcmp(args[ind], "||") == 0) aux_priority = 4;
+//    if (strcmp(args[ind], ";") == 0) aux_priority = 5;
+//    if (strcmp(args[ind], "&") == 0) aux_priority = 6;
+
+    return my_sh_execute_simple(args, init, end, fd_in, fd_out);
+
+
+}
+
+//int my_sh_execute_pipes(char **args) {
+//    int fd[3];
+//    fd[2] = -1;
+//    int aux[2];
+//    int init = 0;
+//    int status = 0;
+//
+//    while (1) {
+//        my_sh_new_args(init, args, fd[2], fd, aux);
+//        int end = aux[0];
+//
+//        int c_status = my_sh_launch_not_out(args, init, end, fd[0], fd[1]);
+//
+//        if (c_status == -1) {
+//            c_status = my_sh_launch(args, init, end, fd[0], fd[1]);
+//        }
+//
+//        if (c_status != 0) status = c_status;
+//
+//        init = aux[1];
+//        if (args[end] == NULL || args[init] == NULL)
+//            break;
+//    }
+//
+//    return status;
+//}
