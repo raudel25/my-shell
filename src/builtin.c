@@ -423,10 +423,13 @@ int my_sh_set(char **args) {
     return status;
 }
 
-int my_sh_background(char *line) {
-    char *new_line = sub_str(line, 0, (int) strlen(line) - 4);
-    char *copy = malloc(sizeof(char) * strlen(new_line));
-    strcpy(copy, new_line);
+int my_sh_background(char **args, int init, int end) {
+    char *new_args[end - init];
+
+    for (int i = 0; i < end - init; i++) {
+        new_args[i] = (char *) malloc(sizeof(char) * strlen(args[init + i]));
+        strcpy(new_args[i], args[init + i]);
+    }
 
     int pid;
 
@@ -434,12 +437,11 @@ int my_sh_background(char *line) {
     if (pid == 0) {
         setpgid(0, 0);
 
-        exit(my_sh_execute(new_line, 0, 0));
+        exit(my_sh_parser(new_args, 0, end - init, -1, -1));
     } else if (pid > 0) {
         setpgid(pid, pid);
         append(background_pid, pid);
         printf("[%d]\t%d\n", background_pid->len, pid);
-        free(new_line);
     }
 
     return 0;

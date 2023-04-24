@@ -8,6 +8,7 @@
 
 #include "decode.h"
 
+#define ERROR "\033[1;31mmy_sh\033[0m"
 #define MY_SH_TOK_BUF_SIZE 1024
 
 char **my_sh_split_line(char *line, char *split) {
@@ -24,7 +25,8 @@ char **my_sh_split_line(char *line, char *split) {
             buf_size += MY_SH_TOK_BUF_SIZE;
             tokens = realloc(tokens, buf_size * sizeof(char *));
             if (!tokens) {
-                fprintf(stderr, "my_sh: allocation error\n");
+                fprintf(stderr, "%s: allocation error\n", ERROR);
+                fprintf(stderr, "my_sh: \n");
                 exit(EXIT_FAILURE);
             }
         }
@@ -113,18 +115,14 @@ char *my_sh_decode_line(char *line) {
         }
 
         if (line[i] == '&') {
-            if (i != len - 1 && i != 0) {
-                if (line[i - 1] != ' ' && line[i + 1] == '&') {
-                    aux_line[j++] = ' ';
-                }
-            } else if (i == len - 1 && i != 0) {
-                if (line[i - 1] != ' ') {
+            if (i != 0) {
+                if (line[i - 1] != ' ' && line[i - 1] != '&') {
                     aux_line[j++] = ' ';
                 }
             }
             aux_line[j++] = line[i];
-            if (i != 0 && i != len - 1) {
-                if (line[i + 1] != ' ' && line[i - 1] == '&') {
+            if (i != sizeof(line) - 1) {
+                if (line[i + 1] != ' ' && line[i + 1] != '&') {
                     aux_line[j++] = ' ';
                 }
             }

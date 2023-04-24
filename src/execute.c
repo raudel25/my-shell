@@ -514,6 +514,22 @@ int my_sh_conditional_execute(char **args, int init, int end, int fd_in, int fd_
     return status1 | status2;
 }
 
+int my_sh_background_execute(char **args, int init, int end, int pos) {
+    if (init == pos) {
+        fprintf(stderr, "%s: incorrect background\n", ERROR);
+        return 1;
+    }
+
+    int status = 0;
+    my_sh_background(args, init, pos);
+
+    if (pos != end - 1) {
+        status = my_sh_parser(args, pos + 1, end, -1, -1);
+    }
+
+    return status;
+}
+
 int my_sh_parser(char **args, int init, int end, int fd_in, int fd_out) {
     int ind = init;
     int priority = 0;
@@ -571,11 +587,11 @@ int my_sh_parser(char **args, int init, int end, int fd_in, int fd_out) {
     if (strcmp(args[ind], "if") == 0) {
         return my_sh_conditional_execute(args, init, end, fd_in, fd_out);
     }
-//    if (strcmp(args[ind], "&") == 0) aux_priority = 6;
+    if (strcmp(args[ind], "&") == 0) {
+        return my_sh_background_execute(args, init, end, ind);
+    }
 
     return my_sh_execute_simple(args, init, end, fd_in, fd_out);
-
-
 }
 
 //int my_sh_execute_pipes(char **args) {

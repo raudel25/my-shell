@@ -65,7 +65,7 @@ int my_sh_false();
 
 int my_sh_set(char **args);
 
-int my_sh_background(char *line);
+int my_sh_background(char **args, int init, int end);
 
 char *my_sh_again(char *line);
 
