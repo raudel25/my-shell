@@ -136,8 +136,15 @@ int my_sh_help(char **args) {
     return 1;
 }
 
-int my_sh_exit() {
-    exit(EXIT_SUCCESS);
+void my_sh_save_history_disk(){
+    char *path = my_sh_path_history();
+    int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
+    for (int i = 0; i < history_len; i++) {
+        write(fd, history[i], strlen(history[i]));
+    }
+    write(fd, "\n", 1);
+    close(fd);
+    free(path);
 }
 
 void my_sh_save_history(char *line) {
@@ -152,14 +159,11 @@ void my_sh_save_history(char *line) {
     }
 
     strcpy(history[history_len++], line);
+}
 
-    char *path = my_sh_path_history();
-    int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
-    for (int i = 0; i < history_len; i++) {
-        write(fd, history[i], strlen(history[i]));
-    }
-    write(fd, "\n", 1);
-    close(fd);
+int my_sh_exit() {
+    my_sh_save_history_disk();
+    exit(EXIT_SUCCESS);
 }
 
 void my_sh_load_history() {
