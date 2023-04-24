@@ -263,7 +263,10 @@ void my_sh_execute_save(char **args, char *line, int save) {
 //    return global_status;
 //}
 
-int my_sh_conditional(char **args, int ind_if, int ind_then, int ind_else, int ind_end, int fd_out) {
+int my_sh_conditional(char **args, int ind_if, int ind_then, int ind_else, int ind_end, int fd_in, int fd_out) {
+    if (fd_in != -1) {
+        close(fd_in);
+    }
 
     int temp_stdout;
 
@@ -365,7 +368,10 @@ int my_sh_execute_simple(char **args, int init, int end, int fd_int, int fd_out)
     return status;
 }
 
-int my_sh_redirect_in(char **args, int init, int end, int fd_out, int pos) {
+int my_sh_redirect_in(char **args, int init, int end, int fd_in, int fd_out, int pos) {
+    if (fd_in != -1) {
+        close(fd_in);
+    }
     if (init == pos || end - pos != 2) {
         if (fd_out != -1) {
             close(fd_out);
@@ -379,7 +385,10 @@ int my_sh_redirect_in(char **args, int init, int end, int fd_out, int pos) {
     return my_sh_parser(args, init, pos, fd, fd_out);
 }
 
-int my_sh_redirect_out(char **args, int init, int end, int fd_in, int pos) {
+int my_sh_redirect_out(char **args, int init, int end, int fd_in, int fd_out, int pos) {
+    if (fd_out != -1) {
+        close(fd_out);
+    }
     if (init == pos || end - pos != 2) {
         if (fd_in != -1) {
             close(fd_in);
@@ -393,7 +402,10 @@ int my_sh_redirect_out(char **args, int init, int end, int fd_in, int pos) {
     return my_sh_parser(args, init, pos, fd_in, fd);
 }
 
-int my_sh_redirect_out_append(char **args, int init, int end, int fd_in, int pos) {
+int my_sh_redirect_out_append(char **args, int init, int end, int fd_in, int fd_out, int pos) {
+    if (fd_out != -1) {
+        close(fd_out);
+    }
     if (init == pos || end - pos != 2) {
         if (fd_in != -1) {
             close(fd_in);
@@ -482,6 +494,9 @@ int my_sh_conditional_execute(char **args, int init, int end, int fd_in, int fd_
     if (ind_else != -1 && (ind_else - ind_then < 2 || ind_end - ind_else < 2)) error = 1;
 
     if (error) {
+        if (fd_in != -1) {
+            close(fd_in);
+        }
         if (fd_out != -1) {
             close(fd_out);
         }
@@ -490,10 +505,10 @@ int my_sh_conditional_execute(char **args, int init, int end, int fd_in, int fd_
     }
 
     if (ind_end == end - 1) {
-        return my_sh_conditional(args, init, ind_then, ind_else, ind_end, fd_out);
+        return my_sh_conditional(args, init, ind_then, ind_else, ind_end, fd_in, fd_out);
     }
 
-    int status1 = my_sh_conditional(args, init, ind_then, ind_else, ind_end, fd_out);
+    int status1 = my_sh_conditional(args, init, ind_then, ind_else, ind_end, fd_in, fd_out);
     int status2 = my_sh_parser(args, ind_end + 1, end, fd_in, fd_out);
 
     return status1 | status2;
@@ -533,16 +548,16 @@ int my_sh_parser(char **args, int init, int end, int fd_in, int fd_out) {
     }
 
     if (strcmp(args[ind], "<") == 0) {
-        return my_sh_redirect_in(args, init, end, fd_out, ind);
+        return my_sh_redirect_in(args, init, end, fd_in, fd_out, ind);
     }
     if (strcmp(args[ind], "|") == 0) {
         return my_sh_pipes(args, init, end, fd_in, fd_out, ind);
     }
     if (strcmp(args[ind], ">") == 0) {
-        return my_sh_redirect_out(args, init, end, fd_in, ind);
+        return my_sh_redirect_out(args, init, end, fd_in, fd_out, ind);
     };
     if (strcmp(args[ind], ">") == 0) {
-        return my_sh_redirect_out_append(args, init, end, fd_in, ind);
+        return my_sh_redirect_out_append(args, init, end, fd_in, fd_out, ind);
     };
     if (strcmp(args[ind], "&&") == 0) {
         return my_sh_and_or(args, init, end, ind, 1);
