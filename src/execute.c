@@ -402,30 +402,96 @@ int my_sh_execute_simple(char **args, int init, int end, int fd_int, int fd_out)
     return status;
 }
 
-int my_sh_redirect_in(char **args, int init, int end, int fd_out) {
-    int fd = redirect_in(args[end - 1]);
+int my_sh_redirect_in(char **args, int init, int end, int fd_out, int pos) {
+    if (init == pos || end - pos != 2) {
+        if (fd_out != -1) {
+            close(fd_out);
+        }
+        fprintf(stderr, "my_sh: incorrect command redirect\n");
+        return 1;
+    }
 
-    return my_sh_parser(args, init, end - 2, fd, fd_out);
+    int fd = redirect_in(args[pos + 1]);
+
+    return my_sh_parser(args, init, pos, fd, fd_out);
 }
 
-int my_sh_redirect_out(char **args, int init, int end, int fd_in) {
-    int fd = redirect_out(args[end - 1]);
+int my_sh_redirect_out(char **args, int init, int end, int fd_in, int pos) {
+    if (init == pos || end - pos != 2) {
+        if (fd_in != -1) {
+            close(fd_in);
+        }
+        fprintf(stderr, "my_sh: incorrect command redirect\n");
+        return 1;
+    }
 
-    return my_sh_parser(args, init, end - 2, fd_in, fd);
+    int fd = redirect_out(args[pos + 1]);
+
+    return my_sh_parser(args, init, pos, fd_in, fd);
 }
 
-int my_sh_redirect_out_append(char **args, int init, int end, int fd_in) {
-    int fd = redirect_out_append(args[end - 1]);
+int my_sh_redirect_out_append(char **args, int init, int end, int fd_in, int pos) {
+    if (init == pos || end - pos != 2) {
+        if (fd_in != -1) {
+            close(fd_in);
+        }
+        fprintf(stderr, "my_sh: incorrect command pipe\n");
+        return 1;
+    }
 
-    return my_sh_parser(args, init, end - 2, fd_in, fd);
+    int fd = redirect_out_append(args[pos + 1]);
+
+    return my_sh_parser(args, init, pos, fd_in, fd);
 }
 
 int my_sh_pipes(char **args, int init, int end, int fd_in, int fd_out, int pos) {
+    if (init == pos || end - 1 == pos) {
+        if (fd_in != -1) {
+            close(fd_in);
+        }
+        if (fd_out != -1) {
+            close(fd_out);
+        }
+        fprintf(stderr, "my_sh: incorrect command redirect\n");
+        return 1;
+    }
     int fd[2];
     pipe(fd);
 
     int status1 = my_sh_parser(args, init, pos, fd_in, fd[1]);
     int status2 = my_sh_parser(args, pos + 1, end, fd[0], fd_out);
+
+    return status1 | status2;
+}
+
+int my_sh_and_or(char **args, int init, int end, int pos, int and) {
+    if (init == pos || end - 1 == pos) {
+        fprintf(stderr, "my_sh: incorrect command chain\n");
+        return 1;
+    }
+    int status = my_sh_parser(args, init, pos, -1, -1);
+
+    if (and && !status) {
+        status = my_sh_parser(args, pos + 1, end, -1, -1);
+    }
+
+    if (!and && status) {
+        status = my_sh_parser(args, pos + 1, end, -1, -1);
+    }
+
+    return status;
+}
+
+int my_sh_multiple(char **args, int init, int end, int pos) {
+    int status1 = 0;
+    int status2 = 0;
+
+    if (pos != init) {
+        status1 = my_sh_parser(args, init, pos, -1, -1);
+    }
+    if (pos != end - 1) {
+        status2 = my_sh_parser(args, pos + 1, end, -1, -1);
+    }
 
     return status1 | status2;
 }
@@ -453,20 +519,26 @@ int my_sh_parser(char **args, int init, int end, int fd_in, int fd_out) {
     }
 
     if (strcmp(args[ind], "<") == 0) {
-        return my_sh_redirect_in(args, init, end, fd_out);
+        return my_sh_redirect_in(args, init, end, fd_out, ind);
     }
     if (strcmp(args[ind], "|") == 0) {
         return my_sh_pipes(args, init, end, fd_in, fd_out, ind);
     }
     if (strcmp(args[ind], ">") == 0) {
-        return my_sh_redirect_out(args, init, end, fd_in);
+        return my_sh_redirect_out(args, init, end, fd_in, ind);
     };
     if (strcmp(args[ind], ">") == 0) {
-        return my_sh_redirect_out_append(args, init, end, fd_in);
+        return my_sh_redirect_out_append(args, init, end, fd_in, ind);
     };
-//    if (strcmp(args[ind], "&&") == 0) aux_priority = 4;
-//    if (strcmp(args[ind], "||") == 0) aux_priority = 4;
-//    if (strcmp(args[ind], ";") == 0) aux_priority = 5;
+    if (strcmp(args[ind], "&&") == 0) {
+        return my_sh_and_or(args, init, end, ind, 1);
+    }
+    if (strcmp(args[ind], "||") == 0) {
+        return my_sh_and_or(args, init, end, ind, 0);
+    }
+    if (strcmp(args[ind], ";") == 0) {
+        return my_sh_multiple(args, init, end, ind);
+    };
 //    if (strcmp(args[ind], "&") == 0) aux_priority = 6;
 
     return my_sh_execute_simple(args, init, end, fd_in, fd_out);
