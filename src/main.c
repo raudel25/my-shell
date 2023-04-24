@@ -108,8 +108,7 @@ _Noreturn void my_sh_loop() {
         char *new_line = my_sh_decode_line(line);
         int save = line[0] != ' ';
 
-        int c = my_sh_execute(new_line, save, 1);
-        printf("%d", c);
+        my_sh_execute(new_line, save);
 
         free(line);
         free(new_line);

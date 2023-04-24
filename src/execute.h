@@ -7,7 +7,7 @@
 
 #include "list.h"
 
-int my_sh_execute(char *new_line, int save, int possible_back);
+void my_sh_execute(char *new_line, int save);
 
 int my_sh_execute_pipes(char **args);
 

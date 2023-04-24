@@ -366,7 +366,7 @@ int my_sh_set(char **args) {
                     pipe(fd);
                     dup2(fd[1], fileno(stdout));
 
-                    my_sh_execute(new_command_format, 0, 1);
+                    my_sh_execute(new_command_format, 0);
 
                     write(fd[1], "", 1);
                     close(fd[1]);

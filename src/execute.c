@@ -16,23 +16,6 @@
 #define ERROR "\033[1;31mmy_sh\033[0m"
 #define MY_SH_TOK_BUF_SIZE 1024
 
-
-int redirect_instr(char *args) {
-    if (strcmp(args, "<") == 0)
-        return 0;
-
-    if (strcmp(args, ">") == 0)
-        return 1;
-
-    if (strcmp(args, ">>") == 0)
-        return 2;
-
-    if (strcmp(args, "|") == 0)
-        return 3;
-
-    return -1;
-}
-
 int redirect_out(char *fileName) {
     char *end_ptr = 0;
 
@@ -145,123 +128,9 @@ int my_sh_launch_not_out(char **args, int init, int end, int fd_in, int fd_out) 
     return -1;
 }
 
-//void my_sh_new_args(int init, char **args, int fd_in, int fd[3], int aux[2]) {
-//    fd[0] = fd_in != -1 ? fd_in : -1;
-//    fd[1] = -1;
-//    fd[2] = -1;
-//
-//    int k = init;
-//    int instr = -1;
-//
-//    while (args[k] != NULL) {
-//        instr = redirect_instr(args[k]);
-//        if (instr != -1)
-//            break;
-//
-//        k++;
-//    }
-//
-//    aux[0] = k;
-//    aux[1] = k + 1;
-//
-//    if (instr == 0) {
-//        fd[0] = redirect_in(args[k + 1]);
-//
-//        if (args[k + 2] != NULL) {
-//            instr = redirect_instr(args[k + 2]);
-//            if (instr == 1 || instr == 2) k += 2;
-//            if (instr == 3) k++;
-//        }
-//
-//        aux[1] = k + 2;
-//    }
-//    if (instr == 1) {
-//        fd[1] = redirect_out(args[k + 1]);
-//        aux[1] = k + 2;
-//    }
-//    if (instr == 2) {
-//        fd[1] = redirect_out_append(args[k + 1]);
-//        aux[1] = k + 2;
-//    }
-//    if (instr == 3) {
-//        int fd1[2];
-//        pipe(fd1);
-//
-//        fd[1] = fd1[1];
-//        fd[2] = fd1[0];
-//    }
-//}
-
-void my_sh_execute_save(char **args, char *line, int save) {
+void my_sh_execute_save(char *line, int save) {
     if (save) my_sh_save_history(line);
 }
-
-//int my_sh_execute_chain(char **args, char *line) {
-//    int global_status = -1;
-//    int status;
-//    int execute = 1;
-//
-//    int last = 0;
-//    int i;
-//    int j = 0;
-//    for (i = 0; args[i] != NULL; i++) {
-//        j += ((int) strlen(args[i]) + 1);
-//
-//        if (args[i][strlen(args[i]) - 1] == ';') {
-//            if (global_status == -1) global_status = 1;
-//
-//            if (execute) {
-//                char *aux = sub_str(line, last, j - 3);
-//                status = !my_sh_execute(aux, 0, 0);
-//                free(aux);
-//            }
-//
-//            execute = 1;
-//            last = j;
-//            global_status = status && global_status;
-//        }
-//
-//        if (strcmp(args[i], "&&") == 0) {
-//            if (global_status == -1) global_status = 1;
-//
-//            if (execute) {
-//                char *aux = sub_str(line, last, j - 5);
-//                status = !my_sh_execute(aux, 0, 0);
-//                free(aux);
-//
-//                execute = status;
-//            }
-//
-//            last = j;
-//        }
-//
-//        if (strcmp(args[i], "||") == 0) {
-//            if (global_status == -1) global_status = 1;
-//
-//            if (execute) {
-//                char *aux = sub_str(line, last, j - 5);
-//                status = !my_sh_execute(aux, 0, 0);
-//                free(aux);
-//
-//                execute = !status;
-//            }
-//
-//            last = j;
-//        }
-//    }
-//
-//    if (global_status != -1) {
-//        if (execute && args[i - 1][strlen(args[i - 1]) - 1] != ';') {
-//            char *aux = sub_str(line, last, j - 2);
-//            status = !my_sh_execute(aux, 0, 0);
-//            free(aux);
-//        }
-//
-//        return !(status && global_status);
-//    }
-//
-//    return global_status;
-//}
 
 int my_sh_conditional(char **args, int ind_if, int ind_then, int ind_else, int ind_end, int fd_in, int fd_out) {
     if (fd_in != -1) {
@@ -302,10 +171,9 @@ int my_sh_conditional(char **args, int ind_if, int ind_then, int ind_else, int i
     return status;
 }
 
-int my_sh_execute(char *line, int save, int possible_back) {
+void my_sh_execute(char *line, int save) {
     char *new_line = my_sh_again(line);
 
-    int status;
     char copy[strlen(new_line)];
     strcpy(copy, new_line);
 
@@ -316,46 +184,15 @@ int my_sh_execute(char *line, int save, int possible_back) {
         free(args);
         free(new_line);
 
-        return 1;
+        return;
     }
 
-    my_sh_execute_save(args, copy, save);
+    my_sh_execute_save(copy, save);
 
-//    if (strcmp(args[array_size(args) - 1], "&") == 0 && possible_back) {
-//        int q = my_sh_background(copy);
-//
-//        free(args);
-//        free(new_line);
-//
-//        return q;
-//    }
-//
-//    if (strcmp(args[0], "if") == 0) {
-//        int q = my_sh_conditional(args, copy);
-//
-//        free(args);
-//        free(new_line);
-//
-//        return q;
-//    }
-//
-//    int chain = my_sh_execute_chain(args, copy);
-//
-//    if (chain != -1) {
-//        free(args);
-//        free(new_line);
-//
-//        return chain;
-//    }
-//
-//    status = my_sh_execute_pipes(args);
-
-    status = my_sh_parser(args, 0, array_size(args), -1, -1);
+    my_sh_parser(args, 0, array_size(args), -1, -1);
 
     free(args);
     free(new_line);
-
-    return status;
 }
 
 int my_sh_execute_simple(char **args, int init, int end, int fd_int, int fd_out) {
@@ -376,7 +213,7 @@ int my_sh_redirect_in(char **args, int init, int end, int fd_in, int fd_out, int
         if (fd_out != -1) {
             close(fd_out);
         }
-        fprintf(stderr, "%s: incorrect command pipe\n", ERROR);
+        fprintf(stderr, "%s: incorrect redirect\n", ERROR);
         return 1;
     }
 
@@ -393,7 +230,7 @@ int my_sh_redirect_out(char **args, int init, int end, int fd_in, int fd_out, in
         if (fd_in != -1) {
             close(fd_in);
         }
-        fprintf(stderr, "%s: incorrect command pipe\n", ERROR);
+        fprintf(stderr, "%s: incorrect redirect\n", ERROR);
         return 1;
     }
 
@@ -410,7 +247,7 @@ int my_sh_redirect_out_append(char **args, int init, int end, int fd_in, int fd_
         if (fd_in != -1) {
             close(fd_in);
         }
-        fprintf(stderr, "%s: incorrect command pipe\n", ERROR);
+        fprintf(stderr, "%s: incorrect redirect\n", ERROR);
         return 1;
     }
 
@@ -427,7 +264,7 @@ int my_sh_pipes(char **args, int init, int end, int fd_in, int fd_out, int pos) 
         if (fd_out != -1) {
             close(fd_out);
         }
-        fprintf(stderr, "%s: incorrect command pipes\n", ERROR);
+        fprintf(stderr, "%s: incorrect pipes\n", ERROR);
         return 1;
     }
     int fd[2];
@@ -441,7 +278,7 @@ int my_sh_pipes(char **args, int init, int end, int fd_in, int fd_out, int pos) 
 
 int my_sh_and_or(char **args, int init, int end, int pos, int and) {
     if (init == pos || end - 1 == pos) {
-        fprintf(stderr, "%s: incorrect command chain\n", ERROR);
+        fprintf(stderr, "%s: incorrect chain\n", ERROR);
         return 1;
     }
     int status = my_sh_parser(args, init, pos, -1, -1);
@@ -593,30 +430,3 @@ int my_sh_parser(char **args, int init, int end, int fd_in, int fd_out) {
 
     return my_sh_execute_simple(args, init, end, fd_in, fd_out);
 }
-
-//int my_sh_execute_pipes(char **args) {
-//    int fd[3];
-//    fd[2] = -1;
-//    int aux[2];
-//    int init = 0;
-//    int status = 0;
-//
-//    while (1) {
-//        my_sh_new_args(init, args, fd[2], fd, aux);
-//        int end = aux[0];
-//
-//        int c_status = my_sh_launch_not_out(args, init, end, fd[0], fd[1]);
-//
-//        if (c_status == -1) {
-//            c_status = my_sh_launch(args, init, end, fd[0], fd[1]);
-//        }
-//
-//        if (c_status != 0) status = c_status;
-//
-//        init = aux[1];
-//        if (args[end] == NULL || args[init] == NULL)
-//            break;
-//    }
-//
-//    return status;
-//}
