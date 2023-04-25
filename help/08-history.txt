@@ -1,4 +1,4 @@
-El comando history muestra los últimos 20 comandos ejecutados en el shell, enumerados desde 1 para el más antiguo hasta 20
+El comando history muestra los últimos 100 comandos ejecutados en el shell, enumerados desde 1 para el más antiguo hasta 100
 para el último comando. Si el comando ejecutado empieza con espacios no será guardado en el historial.\
 \
 Ejemplo:\
@@ -18,5 +18,5 @@ my_sh $  hola   # no se guarda en el historial\
 \
 Implementación:\
 \
-Se guardan los comandos en el archivo .my_sh_history ubicado en /home.\
+Se usa el historial del a biblioteca readline y se guardan los comandos en el archivo .my_sh_history ubicado en /home.\
 

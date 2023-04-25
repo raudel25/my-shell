@@ -17,50 +17,8 @@
 
 #define MY_SH_TOK_DELIM " \t\r\n\a"
 
-int current_command;
-
-void command_change() {
-    int len = (int) strlen(history[current_command]);
-
-    char c[len];
-
-    int i;
-    for (i = 0; i < len - 1; i++) {
-        c[i] = ((char *) history[current_command])[i];
-    }
-    c[i] = 0;
-
-    rl_replace_line("", 0);
-    rl_insert_text(c);
-    rl_redisplay();
-}
-
-static int up_arrow_callback() {
-    if (current_command != 0 && current_command != -1 && history_len != 0) {
-        current_command--;
-        command_change();
-    }
-    if (current_command == -1 && history_len != 0) {
-        current_command = history_len - 1;
-        command_change();
-    }
-
-    return 0;
-}
-
-static int down_arrow_callback() {
-    if (current_command != history_len - 1 && current_command != -1 && history_len != 0) {
-        current_command++;
-        command_change();
-    }
-    return 0;
-}
-
 char *prompt() {
-    current_command = -1;
     char *line = NULL;
-    rl_bind_keyseq("\\e[A", up_arrow_callback);
-    rl_bind_keyseq("\\e[B", down_arrow_callback);
 
     char cwd[128];
     getcwd(cwd, sizeof(cwd));
@@ -74,7 +32,6 @@ char *prompt() {
 
 void my_sh_ctrl_c() {
     if (current_pid == -1) {
-        current_command = -1;
         printf("\n");
         rl_on_new_line();
         rl_replace_line("", 0);

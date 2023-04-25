@@ -6,9 +6,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include <fcntl.h>
 #include <sys/wait.h>
 #include <pwd.h>
+#include <readline/history.h>
 
 #include "builtin.h"
 #include "decode.h"
@@ -21,7 +21,7 @@
 
 #define HISTORY_FILE ".my_sh_history"
 #define MY_SH_TOK_BUF_SIZE 1024
-#define MY_SH_MAX_HISTORY 20
+#define MY_SH_MAX_HISTORY 100
 #define MY_SH_TOK_DELIM " \t\r\n\a"
 
 int current_pid;
@@ -29,10 +29,6 @@ int current_pid;
 int last_pid;
 
 List *background_pid = NULL;
-
-char *history[MY_SH_MAX_HISTORY];
-
-int history_len;
 
 char *variables[26];
 
@@ -87,6 +83,13 @@ char *my_sh_path_history() {
     return path;
 }
 
+void my_sh_load_history(){
+    char *path = my_sh_path_history();
+    read_history(path);
+    stifle_history(MY_SH_MAX_HISTORY);
+    free(path);
+}
+
 int my_sh_num_builtins() {
     return sizeof(builtin_str) / sizeof(char *);
 }
@@ -136,93 +139,25 @@ int my_sh_help(char **args) {
     return 1;
 }
 
-void my_sh_save_history_disk(){
-    char *path = my_sh_path_history();
-    int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU);
-    for (int i = 0; i < history_len; i++) {
-        write(fd, history[i], strlen(history[i]));
-    }
-    write(fd, "\n", 1);
-    close(fd);
-    free(path);
-}
-
-void my_sh_save_history(char *line) {
-    if (history_len == MY_SH_MAX_HISTORY) {
-        char *aux = history[0];
-        for (int i = 1; i < history_len; i++) {
-            history[i - 1] = history[i];
-        }
-        history_len--;
-
-        history[history_len] = aux;
-    }
-
-    strcpy(history[history_len++], line);
+void my_sh_save_history(char *line){
+    add_history(line);
 }
 
 int my_sh_exit() {
-    my_sh_save_history_disk();
+    char *path = my_sh_path_history();
+    write_history(path);
+    free(path);
+
     exit(EXIT_SUCCESS);
 }
 
-void my_sh_load_history() {
-    for(int i=0;i<MY_SH_MAX_HISTORY;i++){
-        history[i]=(char *) malloc(MY_SH_TOK_BUF_SIZE);
-    }
-
-    char *path = my_sh_path_history();
-
-    int status = 0;
-    FILE *file;
-    file = fopen(path, "r");
-    int i = 0;
-    if (file != NULL) {
-        while (status != -1) {
-            char *line = NULL;
-            size_t buf_size = 0;
-            status = (int) getline(&line, &buf_size, file);
-            if (status == -1) {
-                i--;
-                free(line);
-                continue;
-            }
-            if (i == MY_SH_MAX_HISTORY) break;
-
-            strcpy(history[i], line);
-            free(line);
-            i++;
-        }
-        history_len = i;
-        fclose(file);
-    }
-
-    free(path);
-}
-
 int my_sh_history() {
-    for (int j = 0; j < history_len; j++) {
-        printf("%d: %s", j + 1, history[j]);
+    HIST_ENTRY **list = history_list();
+    for (int j = 0; j < history_length; j++) {
+        printf("%d: %s\n", j + 1, list[j]->line);
     }
 
     return 0;
-}
-
-char *my_sh_get_again(int ind, int last) {
-    char *again = NULL;
-    if (last) ind = history_len;
-
-    for (int j = 0; j < history_len; j++) {
-        if (ind == j + 1) {
-            char *aux = sub_str(history[j], 0,
-                                (int) strlen(history[j]) - 2);
-            again = (char *) malloc(sizeof(char) * (strlen(aux) + 1));
-            strcpy(again, aux);
-            strcat(again, "\n");
-        }
-    }
-
-    return again;
 }
 
 void my_sh_init_variables() {
@@ -428,28 +363,17 @@ int my_sh_set(char **args) {
 }
 
 int my_sh_background(char **args, int init, int end) {
-    char *new_args[end - init];
-
-    for (int i = 0; i < end - init; i++) {
-        new_args[i] = (char *) malloc(sizeof(char) * strlen(args[init + i]));
-        strcpy(new_args[i], args[init + i]);
-    }
-
     int pid;
 
     pid = fork();
     if (pid == 0) {
         setpgid(0, 0);
 
-        exit(my_sh_parser(new_args, 0, end - init, -1, -1));
+        exit(my_sh_parser(args, init, end, -1, -1));
     } else if (pid > 0) {
         setpgid(pid, pid);
         append(background_pid, pid);
         printf("[%d]\t%d\n", background_pid->len, pid);
-
-        for (int i = 0; i < end - init; i++) {
-            free(new_args[i]);
-        }
     }
 
     return 0;
@@ -460,7 +384,7 @@ char *my_sh_again(char *line) {
     char *aux = (char *) malloc(MY_SH_TOK_BUF_SIZE);
     strcpy(aux, "");
 
-    int q = 0;
+    int q;
     int last;
     int error = 0;
 
@@ -477,12 +401,11 @@ char *my_sh_again(char *line) {
                 else i++;
             } else last = 1;
 
-            char *c_again = my_sh_get_again(q, last);
+            if (last) q = history_length;
 
-            if (c_again != NULL) {
-                c_again[strlen(c_again)-1]=0;
-                strcat(aux, c_again);
-                free(c_again);
+            if (q <= history_length) {
+                HIST_ENTRY **list = history_list();
+                strcat(aux, list[q - 1]->line);
             } else {
                 error = 1;
                 strcat(aux, "false");
@@ -495,7 +418,6 @@ char *my_sh_again(char *line) {
             strcat(aux, " ");
         }
     }
-    strcat(aux, "\n");
 
     if (error) {
         fprintf(stderr, "%s: incorrect command again\n", ERROR);

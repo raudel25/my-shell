@@ -213,7 +213,7 @@ int my_sh_redirect_in(char **args, int init, int end, int fd_in, int fd_out, int
         if (fd_out != -1) {
             close(fd_out);
         }
-        fprintf(stderr, "%s: incorrect redirect\n", ERROR);
+        fprintf(stderr, "%s: incorrect command redirect\n", ERROR);
         return 1;
     }
 
@@ -230,7 +230,7 @@ int my_sh_redirect_out(char **args, int init, int end, int fd_in, int fd_out, in
         if (fd_in != -1) {
             close(fd_in);
         }
-        fprintf(stderr, "%s: incorrect redirect\n", ERROR);
+        fprintf(stderr, "%s: incorrect command redirect\n", ERROR);
         return 1;
     }
 
@@ -247,7 +247,7 @@ int my_sh_redirect_out_append(char **args, int init, int end, int fd_in, int fd_
         if (fd_in != -1) {
             close(fd_in);
         }
-        fprintf(stderr, "%s: incorrect redirect\n", ERROR);
+        fprintf(stderr, "%s: incorrect command redirect\n", ERROR);
         return 1;
     }
 
@@ -264,7 +264,7 @@ int my_sh_pipes(char **args, int init, int end, int fd_in, int fd_out, int pos) 
         if (fd_out != -1) {
             close(fd_out);
         }
-        fprintf(stderr, "%s: incorrect pipes\n", ERROR);
+        fprintf(stderr, "%s: incorrect command pipes\n", ERROR);
         return 1;
     }
     int fd[2];
@@ -278,7 +278,7 @@ int my_sh_pipes(char **args, int init, int end, int fd_in, int fd_out, int pos) 
 
 int my_sh_and_or(char **args, int init, int end, int pos, int and) {
     if (init == pos || end - 1 == pos) {
-        fprintf(stderr, "%s: incorrect chain\n", ERROR);
+        fprintf(stderr, "%s: incorrect command chain\n", ERROR);
         return 1;
     }
     int status = my_sh_parser(args, init, pos, -1, -1);
@@ -337,7 +337,7 @@ int my_sh_conditional_execute(char **args, int init, int end, int fd_in, int fd_
         if (fd_out != -1) {
             close(fd_out);
         }
-        fprintf(stderr, "%s: incorrect conditional\n", ERROR);
+        fprintf(stderr, "%s: incorrect command conditional\n", ERROR);
         return 1;
     }
 
@@ -353,7 +353,7 @@ int my_sh_conditional_execute(char **args, int init, int end, int fd_in, int fd_
 
 int my_sh_background_execute(char **args, int init, int end, int pos) {
     if (init == pos) {
-        fprintf(stderr, "%s: incorrect background\n", ERROR);
+        fprintf(stderr, "%s: incorrect command background\n", ERROR);
         return 1;
     }
 

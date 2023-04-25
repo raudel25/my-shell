@@ -5,8 +5,6 @@
 #ifndef SHELL_BUILTIN_H
 #define SHELL_BUILTIN_H
 
-#define MY_SH_MAX_HISTORY 20
-
 #include "list.h"
 
 extern int current_pid;
@@ -14,10 +12,6 @@ extern int current_pid;
 extern int last_pid;
 
 extern List *background_pid;
-
-extern char *history[MY_SH_MAX_HISTORY];
-
-extern int history_len;
 
 extern char *variables[26];
 
@@ -49,8 +43,6 @@ void my_sh_save_history(char *line);
 
 int my_sh_history();
 
-void my_sh_load_history();
-
 int my_sh_unset(char **args);
 
 int my_sh_foreground(char **args);
@@ -70,5 +62,7 @@ int my_sh_background(char **args, int init, int end);
 char *my_sh_again(char *line);
 
 void my_sh_update_background();
+
+void my_sh_load_history();
 
 #endif //SHELL_BUILTIN_H
