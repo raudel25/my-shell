@@ -446,6 +446,10 @@ int my_sh_background(char **args, int init, int end) {
         setpgid(pid, pid);
         append(background_pid, pid);
         printf("[%d]\t%d\n", background_pid->len, pid);
+
+        for (int i = 0; i < end - init; i++) {
+            free(new_args[i]);
+        }
     }
 
     return 0;
