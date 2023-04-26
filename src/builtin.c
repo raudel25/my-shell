@@ -381,7 +381,6 @@ char *my_sh_again(char *line) {
     int len_aux = 5;
 
     int q;
-    int error = 0;
 
     int i;
     for (i = 0; i < len; i++) {
@@ -436,23 +435,17 @@ char *my_sh_again(char *line) {
             } else if (q <= history_length) {
                 HIST_ENTRY **list = history_list();
                 strcat(aux, list[q - 1]->line);
-
-                i += (s2 - 1);
             } else {
-                error = 1;
+                fprintf(stderr, "%s: incorrect command again\n", ERROR);
                 strcat(aux, "false");
-
-                i += (s2 - 1);
             }
+
+            i += (s2 - i-1);
         } else {
             int w = (int) strlen(aux);
             aux[w++] = line[i];
             aux[w] = 0;
         }
-    }
-
-    if (error) {
-        fprintf(stderr, "%s: incorrect command again\n", ERROR);
     }
 
     return aux;
