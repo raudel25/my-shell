@@ -62,13 +62,15 @@ _Noreturn void my_sh_loop() {
 
         line = prompt();
 
-        char *new_line = my_sh_decode_line(line);
-        int save = line[0] != ' ';
+        char *line_again = my_sh_again(line);
+        char *new_line = my_sh_decode_line(line_again);
+        if (line[0] != ' ') my_sh_save_history(line_again);
 
-        my_sh_execute(new_line, save);
+        my_sh_execute(new_line);
 
         free(line);
         free(new_line);
+        free(line_again);
     } while (1);
 }
 

@@ -298,7 +298,7 @@ int my_sh_set(char **args) {
                     pipe(fd);
                     dup2(fd[1], fileno(stdout));
 
-                    my_sh_execute(new_command_format, 0);
+                    my_sh_execute(new_command_format);
 
                     write(fd[1], "", 1);
                     close(fd[1]);
@@ -368,43 +368,86 @@ int my_sh_background(char **args, int init, int end) {
     return 0;
 }
 
+int special_char(char c) {
+    return c == '|' || c == ';' || c == '&' || c == '#' || c == '`';
+}
+
 char *my_sh_again(char *line) {
-    char **args = my_sh_split_line(line, MY_SH_TOK_DELIM);
     char *aux = (char *) malloc(MY_SH_TOK_BUF_SIZE);
     strcpy(aux, "");
 
+    char *pat = "again";
+    int len = (int) strlen(line);
+    int len_aux = 5;
+
     int q;
-    int last;
     int error = 0;
 
-    int len = array_size(args);
-    for (int i = 0; i < len; i++) {
-        if (strcmp(args[i], "again") == 0) {
-            last = 0;
+    int i;
+    for (i = 0; i < len; i++) {
+        int equal = 1;
+        if (len - i >= len_aux) {
+            for (int j = 0; j < len_aux; j++) {
+                if (line[i + j] != pat[j]) equal = 0;
+            }
+        } else equal = 0;
 
-            if (args[i + 1] != NULL) {
-                char *p;
-                q = (int) strtol(args[i + 1], &p, 10);
+        if (equal) {
+            if (i + len_aux == len || special_char(line[i + len_aux])) {
+                HIST_ENTRY **list = history_list();
+                strcat(aux, list[history_length - 1]->line);
+                i += (len_aux - 1);
+                continue;
+            }
+            int s1 = i + len_aux;
+            while (line[s1] == ' ') {
+                s1++;
+                if (s1 == len) break;
+            }
 
-                if (q == 0) last = 1;
-                else i++;
-            } else last = 1;
+            if (s1 == len) {
+                HIST_ENTRY **list = history_list();
+                strcat(aux, list[history_length - 1]->line);
+                break;
+            }
 
-            if (last) q = history_length;
+            int s2 = s1;
+            while (line[s2] != ' ' && !special_char(line[s2])) {
+                s2++;
+                if (s2 == len) break;
+            }
 
-            if (q <= history_length) {
+            char *num = sub_str(line, s1, s2 - 1);
+            char *p;
+            q = (int) strtol(num, &p, 10);
+
+            int number = 1;
+            for (int j = 0; j < s2 - s1; j++) {
+                if (num[j] - '0' < 0 || num[j] - '0' > 9) number = 0;
+            }
+
+            free(num);
+
+            if (!number) {
+                HIST_ENTRY **list = history_list();
+                strcat(aux, list[history_length - 1]->line);
+
+                i += (len_aux - 1);
+            } else if (q <= history_length) {
                 HIST_ENTRY **list = history_list();
                 strcat(aux, list[q - 1]->line);
+
+                i += (s2 - 1);
             } else {
                 error = 1;
                 strcat(aux, "false");
+
+                i += (s2 - 1);
             }
         } else {
-            strcat(aux, args[i]);
-        }
-
-        if (i != len - 1) {
-            strcat(aux, " ");
+            int w = (int) strlen(aux);
+            aux[w++] = line[i];
+            aux[w] = 0;
         }
     }
 
@@ -412,7 +455,6 @@ char *my_sh_again(char *line) {
         fprintf(stderr, "%s: incorrect command again\n", ERROR);
     }
 
-    free(args);
     return aux;
 }
 

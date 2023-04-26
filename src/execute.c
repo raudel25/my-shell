@@ -128,32 +128,22 @@ int my_sh_launch_not_out(char **args, int init, int end, int fd_in, int fd_out) 
     return -1;
 }
 
-void my_sh_execute_save(char *line, int save) {
-    if (save) my_sh_save_history(line);
-}
+void my_sh_execute(char *line) {
 
-void my_sh_execute(char *line, int save) {
-    char *new_line = my_sh_again(line);
+    char copy[strlen(line)];
 
-    char copy[strlen(new_line)];
-    strcpy(copy, new_line);
-
-    my_sh_encode_set(new_line);
-    char **args = my_sh_split_line(new_line, MY_SH_TOK_DELIM);
+    my_sh_encode_set(line);
+    char **args = my_sh_split_line(line, MY_SH_TOK_DELIM);
 
     if (args[0] == NULL) {
         free(args);
-        free(new_line);
 
         return;
     }
 
-    my_sh_execute_save(copy, save);
-
     my_sh_parser(args, 0, array_size(args), -1, -1);
 
     free(args);
-    free(new_line);
 }
 
 int my_sh_execute_simple(char **args, int init, int end, int fd_int, int fd_out) {
