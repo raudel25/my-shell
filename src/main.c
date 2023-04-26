@@ -11,9 +11,9 @@
 #include "list.h"
 #include "builtin.h"
 
-#define BOLD_CYAN "\033[1;36m"
+#define CYAN "\033[0;36m"
 #define RESET "\033[0m"
-#define BOLD_RED "\033[1;31m"
+#define YELLOW "\033[0;33m"
 
 #define MY_SH_TOK_DELIM " \t\r\n\a"
 
@@ -23,7 +23,7 @@ char *prompt() {
     char cwd[128];
     getcwd(cwd, sizeof(cwd));
     char head[256];
-    snprintf(head, 256, "%smy_sh@%s:%s%s$ %s", BOLD_RED, pw->pw_name, BOLD_CYAN, cwd, RESET);
+    snprintf(head, 256, "%smy_sh@%s:%s%s$ %s", YELLOW, pw->pw_name, CYAN, cwd, RESET);
 
     line = readline(head);
 

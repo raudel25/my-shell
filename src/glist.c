@@ -1,7 +1,3 @@
-//
-// Created by daniel on 2020-03-22.
-//
-
 #include "glist.h"
 
 struct GList *createListG() {

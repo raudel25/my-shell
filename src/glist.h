@@ -1,17 +1,13 @@
-//
-// Created by daniel on 2020-03-22.
-//
-
-#ifndef NSH_GLIST_H
-#define NSH_GLIST_H
+#ifndef MY_SH_GLIST_H
+#define MY_SH_GLIST_H
 
 #include <stdlib.h>
 
-typedef struct GList{
-	int len;
-	unsigned capacity;
-	char** array;
-}GList;
+typedef struct GList {
+    int len;
+    unsigned capacity;
+    char **array;
+} GList;
 
 struct GList *createListG();
 
@@ -26,4 +22,4 @@ int removeAtIndexG(struct GList *list, int index);
 int addAtIndexG(struct GList *list, int index, char *value);
 
 
-#endif //NSH_GLIST_H
+#endif //MY_SH_GLIST_H

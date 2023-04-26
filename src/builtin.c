@@ -15,9 +15,9 @@
 #include "help.c"
 #include "execute.h"
 
-#define BOLD_BLUE "\033[1;34m"
+#define GREEN "\033[0;32m"
 #define RESET "\033[0m"
-#define ERROR "\033[1;31mmy_sh\033[0m"
+#define ERROR "\033[0;31mmy_sh\033[0m"
 
 #define HISTORY_FILE ".my_sh_history"
 #define MY_SH_TOK_BUF_SIZE 1024
@@ -123,7 +123,7 @@ int my_sh_help(char **args) {
         printf("\n");
 
         for (int i = 0; i < num_commands(); i++) {
-            printf("%s%s%s: %s\n", BOLD_BLUE, commands[i], RESET, commands_help[i]);
+            printf("%s%s%s: %s\n", GREEN, commands[i], RESET, commands_help[i]);
         }
 
         return 0;
@@ -233,7 +233,7 @@ int my_sh_jobs() {
 int my_sh_get(char **args) {
     if (args[1] == NULL) {
         for (int i = 0; i < variables_key->len; i++) {
-            printf("%s%s%s = %s\n", BOLD_BLUE, variables_key->array[i], RESET, variables_value->array[i]);
+            printf("%s%s%s = %s\n", GREEN, variables_key->array[i], RESET, variables_value->array[i]);
         }
 
         return 0;
