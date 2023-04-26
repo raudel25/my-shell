@@ -3,5 +3,5 @@ project(my_sh)
 
 set(CMAKE_C_STANDARD 17)
 SET( COMPILE_FLAGS "-lreadline" )
-add_executable(my_sh src/main.c src/list.c src/execute.c src/decode.c src/builtin.c)
+add_executable(my_sh src/main.c src/list.c src/execute.c src/decode.c src/builtin.c src/glist.c)
 target_link_libraries(my_sh -lreadline)

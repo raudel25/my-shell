@@ -1,7 +1,6 @@
-El comando set <c> <value> permite introducir una nueva variable al sistema o modificar el valor de una ya existente.
-Las variables introducidas deben ser letras minúsculas del alfabeto inglés. Si <value> es está entre comillas `command` se
-ejecuta command y la salida de de ese comando se almacena como valor de <c>, si la salida del comando es vacía la ejecución
-de set no tiene éxito y por tanto no se guarda la variable.\
+El comando set <var> <value> permite introducir una nueva variable al sistema o modificar el valor de una ya existente.
+Si <value> es está entre comillas `command` se ejecuta command y la salida de de ese comando se almacena como valor de
+<var>, si la salida del comando es vacía la ejecución de set no tiene éxito y por tanto no se guarda la variable.\
 \
 Ejemplo:\
 \
@@ -14,6 +13,6 @@ my_sh $ set a `cd` # la salida de cd es vacía por tanto el set falla y el valor
 \
 Implementación:\
 \
-Para almacenar las variables se utiliza un array de tamaño fijo y se indexa en el valor de dicha variable por su código ascii.
-en el caso de `command` se crea un fork() se ejecuta command y se lee la salida de ese proceso.\
+Para almacenar las variables se utilizan dos listas una para las llaves y otra para los valores.
+en el caso de `command` se atrapa la salida y se ejecuta command y se lee la salida de ese proceso.\
 

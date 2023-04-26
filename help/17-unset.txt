@@ -1,4 +1,4 @@
-El comando unset <c> elimina la variable <c> del sistema con su respectivo valor. Si <c> no existe el comando no tiene
+El comando unset <var> elimina la variable <var> del sistema con su respectivo valor. Si <var> no existe el comando no tiene
 éxito.\
 \
 Ejemplo:\
@@ -10,4 +10,4 @@ my_sh $ unset c # c se elimina del sistema\
 \
 Implementación:\
 \
-Para almacenar las variables se utiliza un array de tamaño fijo y se indexa en el valor de dicha variable por su código ascii.\
+Para almacenar las variables se utilizan dos listas una para las llaves y otra para los valores.\

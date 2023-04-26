@@ -6,6 +6,7 @@
 #define SHELL_BUILTIN_H
 
 #include "list.h"
+#include "glist.h"
 
 extern int current_pid;
 
@@ -13,7 +14,9 @@ extern int last_pid;
 
 extern List *background_pid;
 
-extern char *variables[26];
+extern GList *variables_key;
+
+extern GList *variables_value;
 
 extern struct passwd *pw;
 

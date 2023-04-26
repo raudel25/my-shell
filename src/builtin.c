@@ -30,7 +30,9 @@ int last_pid;
 
 List *background_pid = NULL;
 
-char *variables[26];
+GList *variables_key;
+
+GList *variables_value;
 
 struct passwd *pw = NULL;
 
@@ -161,32 +163,29 @@ int my_sh_history() {
 }
 
 void my_sh_init_variables() {
-    for (int i = 0; i < 26; i++) {
-        variables[i] = NULL;
-    }
+    variables_key = createListG();
+    variables_value = createListG();
 }
 
-int check_variable(char *variable) {
-    if (strlen(variable) != 1 || variable[0] - 'a' < 0 || variable[0] - 'a' > 'z') {
-        fprintf(stderr, "%s: the variables must by letters of english alphabet\n", ERROR);
-
-        return 0;
+int contains_key(char *key) {
+    for (int i = 0; i < variables_key->len; i++) {
+        if (strcmp(key, variables_key->array[i]) == 0) return i;
     }
 
-    return 1;
+    return -1;
 }
 
 int my_sh_unset(char **args) {
     if (args[1] != NULL) {
-        if (check_variable(args[1])) {
-            if (variables[args[1][0] - 'a'] != NULL) {
-                free(variables[args[1][0] - 'a']);
-                variables[args[1][0] - 'a'] = NULL;
-            } else {
-                fprintf(stderr, "%s: incorrect command unset\n", ERROR);
+        int index = contains_key(args[1]);
 
-                return 1;
-            }
+        if (index != -1) {
+            removeAtIndexG(variables_key, index);
+            removeAtIndexG(variables_value, index);
+        } else {
+            fprintf(stderr, "%s: variable not found\n", ERROR);
+
+            return 1;
         }
     } else {
         fprintf(stderr, "%s: incorrect command unset\n", ERROR);
@@ -233,29 +232,19 @@ int my_sh_jobs() {
 
 int my_sh_get(char **args) {
     if (args[1] == NULL) {
-        for (int i = 0; i < 26; i++) {
-            if (variables[i] != NULL) {
-                printf("%s%c%s = %s", BOLD_BLUE, (char) (i + 'a'), RESET, variables[i]);
-                if (variables[i][strlen(variables[i]) - 1] != '\n') printf("\n");
-            }
+        for (int i = 0; i < variables_key->len; i++) {
+            printf("%s%s%s = %s\n", BOLD_BLUE, variables_key->array[i], RESET, variables_value->array[i]);
         }
 
         return 0;
     }
 
-    if (check_variable(args[1])) {
-        for (int i = 0; i < 26; i++) {
-            if (i != args[1][0] - 'a')
-                continue;
+    int index = contains_key(args[1]);
+    if (index != -1) {
+        printf("%s\n", variables_value->array[index]);
 
-            if (variables[i] != NULL) {
-                printf("%s", variables[i]);
-                if (variables[i][strlen(variables[i]) - 1] != '\n') printf("\n");
-
-                return 0;
-            }
-        }
-
+        return 0;
+    } else {
         fprintf(stderr, "%s: variable not found\n", ERROR);
     }
 
@@ -274,14 +263,18 @@ int my_sh_set(char **args) {
     int status = 0;
 
     if (args[1] != NULL && args[2] != NULL) {
-        if (check_variable(args[1])) {
             if (args[2][0] != '`') {
-                if (variables[args[1][0] - 'a'] != NULL) {
-                    free(variables[args[1][0] - 'a']);
+                int index = contains_key(args[1]);
+                if (index != -1) {
+                    removeAtIndexG(variables_key, index);
+                    removeAtIndexG(variables_value, index);
                 }
-
-                variables[args[1][0] - 'a'] = (char *) malloc(sizeof(char) * strlen(args[2]));
-                strcpy(variables[args[1][0] - 'a'], args[2]);
+                char *aux_value = (char *) malloc(sizeof(char) * strlen(args[2]));
+                char *aux_key = (char *) malloc(sizeof(char) * strlen(args[1]));
+                strcpy(aux_value, args[2]);
+                strcpy(aux_key, args[1]);
+                appendG(variables_key, aux_key);
+                appendG(variables_value, aux_value);
             } else {
                 char *new_command = NULL;
 
@@ -331,19 +324,19 @@ int my_sh_set(char **args) {
                         buffer[i] = 0;
                         if (buffer[i - 1] == '\n')
                             buffer[i - 1] = 0;
-
-                        if (variables[args[1][0] - 'a'] != NULL) {
-                            free(variables[args[1][0] - 'a']);
+                        int index = contains_key(args[1]);
+                        if (index != -1) {
+                            removeAtIndexG(variables_key, index);
+                            removeAtIndexG(variables_value, index);
                         }
-
-                        variables[args[1][0] - 'a'] = (char *) malloc(sizeof(char) * strlen(buffer));
-                        strcpy(variables[args[1][0] - 'a'], buffer);
+                        char *aux_key = (char *) malloc(sizeof(char) * strlen(buffer));
+                        strcpy(aux_key, args[1]);
+                        appendG(variables_key, aux_key);
+                        appendG(variables_value, buffer);
                     } else {
                         fprintf(stderr, "%s: the output of the command is null\n", ERROR);
                         status = 1;
                     }
-
-                    free(buffer);
                     free(new_command);
                     free(new_command_format);
                 } else {
@@ -351,11 +344,7 @@ int my_sh_set(char **args) {
                     status = 1;
                 }
             }
-        } else {
-            status = 1;
-        }
     } else {
-        fprintf(stderr, "%s: incorrect command set\n", ERROR);
         status = 1;
     }
 

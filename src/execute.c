@@ -132,45 +132,6 @@ void my_sh_execute_save(char *line, int save) {
     if (save) my_sh_save_history(line);
 }
 
-int my_sh_conditional(char **args, int ind_if, int ind_then, int ind_else, int ind_end, int fd_in, int fd_out) {
-    if (fd_in != -1) {
-        close(fd_in);
-    }
-
-    int temp_stdout;
-
-    if (fd_out != -1) {
-        fflush(stdout);
-
-        temp_stdout = dup(fileno(stdout));
-
-        dup2(fd_out, fileno(stdout));
-        close(fd_out);
-    }
-
-    int status = my_sh_parser(args, ind_if + 1, ind_then, -1, -1);
-
-    if (ind_else != -1) {
-        if (!status) {
-            status = my_sh_parser(args, ind_then + 1, ind_else, -1, -1);
-        } else {
-            status = my_sh_parser(args, ind_else + 1, ind_end, -1, -1);
-        }
-    } else {
-        if (!status) {
-            status = my_sh_parser(args, ind_then + 1, ind_end, -1, -1);
-        }
-    }
-
-    if (fd_out != -1) {
-        fflush(stdout);
-        dup2(temp_stdout, fileno(stdout));
-        close(temp_stdout);
-    }
-
-    return status;
-}
-
 void my_sh_execute(char *line, int save) {
     char *new_line = my_sh_again(line);
 
@@ -311,6 +272,45 @@ int my_sh_multiple(char **args, int init, int end, int pos) {
     }
 
     return status1 | status2;
+}
+
+int my_sh_conditional(char **args, int ind_if, int ind_then, int ind_else, int ind_end, int fd_in, int fd_out) {
+    if (fd_in != -1) {
+        close(fd_in);
+    }
+
+    int temp_stdout;
+
+    if (fd_out != -1) {
+        fflush(stdout);
+
+        temp_stdout = dup(fileno(stdout));
+
+        dup2(fd_out, fileno(stdout));
+        close(fd_out);
+    }
+
+    int status = my_sh_parser(args, ind_if + 1, ind_then, -1, -1);
+
+    if (ind_else != -1) {
+        if (!status) {
+            status = my_sh_parser(args, ind_then + 1, ind_else, -1, -1);
+        } else {
+            status = my_sh_parser(args, ind_else + 1, ind_end, -1, -1);
+        }
+    } else {
+        if (!status) {
+            status = my_sh_parser(args, ind_then + 1, ind_end, -1, -1);
+        }
+    }
+
+    if (fd_out != -1) {
+        fflush(stdout);
+        dup2(temp_stdout, fileno(stdout));
+        close(temp_stdout);
+    }
+
+    return status;
 }
 
 int my_sh_conditional_execute(char **args, int init, int end, int fd_in, int fd_out) {
