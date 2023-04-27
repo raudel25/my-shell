@@ -4,4 +4,3 @@ SIGKILL al comando que se está ejecutando.\
 Implementación:\
 \
 Se utilizó la función signal de c.\
-

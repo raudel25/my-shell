@@ -186,3 +186,23 @@ int array_size(char **args) {
 
     return i;
 }
+
+int pat_equal(char *line, char *pat, int pos) {
+    int len = (int) strlen(line);
+    int len_pat = (int) strlen(pat);
+
+    if (len - pos < len_pat || pos < 0) return 0;
+
+    int equal = 1;
+    for (int i = 0; i < len_pat; i++) {
+        if (line[pos + i] != pat[i]) equal = 0;
+    }
+
+    return equal;
+}
+
+void push_str(char *line,char c){
+    int w = (int) strlen(line);
+    line[w++] = c;
+    line[w] = 0;
+}

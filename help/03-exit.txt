@@ -3,4 +3,3 @@ El comando exit finaliza la ejecución del shell.\
 Implementación:\
 \
 Se ejecuta la función exit(EXIT_SUCCESS) para terminar la ejecución del shell.\
-

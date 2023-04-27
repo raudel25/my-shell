@@ -19,4 +19,3 @@ my_sh $  hola   # no se guarda en el historial\
 Implementación:\
 \
 Se usa el historial del a biblioteca readline y se guardan los comandos en el archivo .my_sh_history ubicado en /home.\
-

@@ -23,4 +23,3 @@ Se parsea el comando introducido en busca de los operadores de este apartado, se
 sean parte de la misma operación, para esto llevamos un contador que aumenta al encontrar un if y disminuye al encontrar un
 end. En caso de que la búsqueda sea satisfactoria se obtiene el substring correspondiente, se ejecuta está nueva instrucción
 y se realiza la comprobación correspondiente del éxito del proceso a ejecutar.\
-

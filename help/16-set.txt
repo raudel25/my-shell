@@ -15,4 +15,3 @@ Implementación:\
 \
 Para almacenar las variables se utilizan dos listas una para las llaves y otra para los valores.
 en el caso de `command` se atrapa la salida y se ejecuta command y se lee la salida de ese proceso.\
-

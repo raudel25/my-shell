@@ -17,4 +17,8 @@ int array_size(char **args);
 
 void my_sh_encode_set(char *line);
 
+int pat_equal(char *line, char *pat, int pos);
+
+void push_str(char *line, char c);
+
 #endif //SHELL_DECOD_H

@@ -11,4 +11,3 @@ my_sh $ jobs             # lista los 2 comandos anteriores ocurriendo en el back
 Implementación:\
 \
 Se lista la información almacenada cuando se enviaron los procesos al background.\
-

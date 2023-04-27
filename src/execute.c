@@ -386,10 +386,10 @@ int my_sh_parser(char **args, int init, int end, int fd_in, int fd_out) {
         if (strcmp(args[i], "|") == 0) aux_priority = 3;
         if (strcmp(args[i], "&&") == 0) aux_priority = 4;
         if (strcmp(args[i], "||") == 0) aux_priority = 4;
-        if (strcmp(args[i], ";") == 0) aux_priority = 5;
-        if (strcmp(args[i], "&") == 0) aux_priority = 6;
+        if (strcmp(args[i], "&") == 0) aux_priority = 5;
+        if (strcmp(args[i], ";") == 0) aux_priority = 6;
 
-        if (aux_priority >= priority) {
+        if (aux_priority > priority) {
             priority = aux_priority;
             ind = i;
         }

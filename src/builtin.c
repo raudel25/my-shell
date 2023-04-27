@@ -372,29 +372,48 @@ int special_char(char c) {
     return c == '|' || c == ';' || c == '&' || c == '#' || c == '`';
 }
 
+void get_again(char *line, int index) {
+    if (index <= history_length && index > 0) {
+        HIST_ENTRY **list = history_list();
+        strcat(line, list[index - 1]->line);
+    } else {
+        fprintf(stderr, "%s: incorrect command again\n", ERROR);
+        strcat(line, "false");
+    }
+}
+
 char *my_sh_again(char *line) {
     char *aux = (char *) malloc(MY_SH_TOK_BUF_SIZE);
     strcpy(aux, "");
 
     char *pat = "again";
+    char *pat_help = "help";
     int len = (int) strlen(line);
     int len_aux = 5;
+    int len_help = 4;
 
     int q;
+    for (int i = 0; i < len; i++) {
+        int equal = pat_equal(line, pat, i);
 
-    int i;
-    for (i = 0; i < len; i++) {
-        int equal = 1;
-        if (len - i >= len_aux) {
-            for (int j = 0; j < len_aux; j++) {
-                if (line[i + j] != pat[j]) equal = 0;
+        if (equal) {
+            int w = i - 1;
+
+            while (w >= len_help - 1) {
+                w--;
+                if (line[w] != ' ') break;
             }
-        } else equal = 0;
+
+            int help = pat_equal(line, pat_help, w - len_help + 1);
+            if (help) {
+                push_str(aux, line[i]);
+                continue;
+            }
+        }
 
         if (equal) {
             if (i + len_aux == len || special_char(line[i + len_aux])) {
-                HIST_ENTRY **list = history_list();
-                strcat(aux, list[history_length - 1]->line);
+                get_again(aux, history_length);
                 i += (len_aux - 1);
                 continue;
             }
@@ -405,8 +424,7 @@ char *my_sh_again(char *line) {
             }
 
             if (s1 == len) {
-                HIST_ENTRY **list = history_list();
-                strcat(aux, list[history_length - 1]->line);
+                get_again(aux, history_length);
                 break;
             }
 
@@ -420,31 +438,19 @@ char *my_sh_again(char *line) {
             char *p;
             q = (int) strtol(num, &p, 10);
 
-            int number = 1;
-            for (int j = 0; j < s2 - s1; j++) {
-                if (num[j] - '0' < 0 || num[j] - '0' > 9) number = 0;
-            }
-
-            free(num);
-
-            if (!number) {
+            if (strlen(p) != 0) {
                 HIST_ENTRY **list = history_list();
                 strcat(aux, list[history_length - 1]->line);
 
                 i += (len_aux - 1);
-            } else if (q <= history_length) {
-                HIST_ENTRY **list = history_list();
-                strcat(aux, list[q - 1]->line);
             } else {
-                fprintf(stderr, "%s: incorrect command again\n", ERROR);
-                strcat(aux, "false");
+                get_again(aux, q);
+                i = s2 - 1;
             }
 
-            i += (s2 - i-1);
+            free(num);
         } else {
-            int w = (int) strlen(aux);
-            aux[w++] = line[i];
-            aux[w] = 0;
+            push_str(aux, line[i]);
         }
     }
 
