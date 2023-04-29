@@ -230,11 +230,31 @@ int my_sh_pipes(char **args, int init, int end, int fd_in, int fd_out, int pos) 
     return status1 | status2;
 }
 
-int my_sh_and_or(char **args, int init, int end, int pos, int and) {
+int my_sh_and_or(char **args, int init, int end, int fd_in, int fd_out, int pos, int and) {
+    if (fd_in != -1) {
+        close(fd_in);
+    }
+
     if (init == pos || end - 1 == pos) {
+        if (fd_out != -1) {
+            close(fd_out);
+        }
+
         fprintf(stderr, "%s: incorrect command chain\n", ERROR);
         return 1;
     }
+
+    int temp_stdout;
+
+    if (fd_out != -1) {
+        fflush(stdout);
+
+        temp_stdout = dup(fileno(stdout));
+
+        dup2(fd_out, fileno(stdout));
+        close(fd_out);
+    }
+
     int status = my_sh_parser(args, init, pos, -1, -1);
 
     if (and && !status) {
@@ -245,10 +265,31 @@ int my_sh_and_or(char **args, int init, int end, int pos, int and) {
         status = my_sh_parser(args, pos + 1, end, -1, -1);
     }
 
+    if (fd_out != -1) {
+        fflush(stdout);
+        dup2(temp_stdout, fileno(stdout));
+        close(temp_stdout);
+    }
+
     return status;
 }
 
-int my_sh_multiple(char **args, int init, int end, int pos) {
+int my_sh_multiple(char **args, int init, int end, int fd_in, int fd_out, int pos) {
+    if (fd_in != -1) {
+        close(fd_in);
+    }
+
+    int temp_stdout;
+
+    if (fd_out != -1) {
+        fflush(stdout);
+
+        temp_stdout = dup(fileno(stdout));
+
+        dup2(fd_out, fileno(stdout));
+        close(fd_out);
+    }
+
     int status1 = 0;
     int status2 = 0;
 
@@ -257,6 +298,12 @@ int my_sh_multiple(char **args, int init, int end, int pos) {
     }
     if (pos != end - 1) {
         status2 = my_sh_parser(args, pos + 1, end, -1, -1);
+    }
+
+    if (fd_out != -1) {
+        fflush(stdout);
+        dup2(temp_stdout, fileno(stdout));
+        close(temp_stdout);
     }
 
     return status1 | status2;
@@ -360,10 +407,32 @@ int my_sh_background_execute(char **args, int init, int end, int pos) {
     return status;
 }
 
+int eliminate_parent(char **args, int init, int end, int pos[2]) {
+    int i = init;
+    int j = end - 1;
+
+    while (strcmp(args[i], "(") == 0 && strcmp(args[j], ")") == 0) {
+        i++;
+        j--;
+
+        if (i > j) {
+            return 0;
+        }
+    }
+
+    if (strcmp(args[i], "(") == 0 || strcmp(args[j], ")") == 0) return 0;
+
+    pos[0] = i;
+    pos[1] = j + 1;
+
+    return 1;
+}
+
 int my_sh_parser(char **args, int init, int end, int fd_in, int fd_out) {
     int ind = init;
     int priority = 0;
     int c_cond = 0;
+    int c_parent = 0;
 
     for (int i = init; i < end; i++) {
         int aux_priority = 0;
@@ -374,7 +443,16 @@ int my_sh_parser(char **args, int init, int end, int fd_in, int fd_out) {
         if (strcmp(args[i], "end") == 0) {
             c_cond--;
         }
+        if (strcmp(args[i], "(") == 0) {
+            c_parent++;
+        }
+        if (strcmp(args[i], ")") == 0) {
+            c_parent--;
+        }
         if (c_cond != 0 || strcmp(args[i], "if") == 0 || strcmp(args[i], "end") == 0) {
+            continue;
+        }
+        if (c_parent != 0 || strcmp(args[i], "(") == 0 || strcmp(args[i], ")") == 0) {
             continue;
         }
 
@@ -393,6 +471,19 @@ int my_sh_parser(char **args, int init, int end, int fd_in, int fd_out) {
         }
     }
 
+    if (ind == 0 && priority == 0 && strcmp(args[init], "(") == 0) {
+        int pos[2];
+        int possible = eliminate_parent(args, init, end, pos);
+
+        if (possible) {
+            return my_sh_parser(args, pos[0], pos[1], fd_in, fd_out);
+        } else {
+            fprintf(stderr, "%s: incorrect format of line\n", ERROR);
+
+            return 1;
+        }
+    }
+
     if (strcmp(args[ind], "<") == 0) {
         return my_sh_redirect_in(args, init, end, fd_in, fd_out, ind);
     }
@@ -406,13 +497,13 @@ int my_sh_parser(char **args, int init, int end, int fd_in, int fd_out) {
         return my_sh_redirect_out_append(args, init, end, fd_in, fd_out, ind);
     };
     if (strcmp(args[ind], "&&") == 0) {
-        return my_sh_and_or(args, init, end, ind, 1);
+        return my_sh_and_or(args, init, end, fd_in, fd_out, ind, 1);
     }
     if (strcmp(args[ind], "||") == 0) {
-        return my_sh_and_or(args, init, end, ind, 0);
+        return my_sh_and_or(args, init, end, fd_in, fd_out, ind, 0);
     }
     if (strcmp(args[ind], ";") == 0) {
-        return my_sh_multiple(args, init, end, ind);
+        return my_sh_multiple(args, init, end, fd_in, fd_out, ind);
     };
     if (strcmp(args[ind], "if") == 0) {
         return my_sh_conditional_execute(args, init, end, fd_in, fd_out);

@@ -53,7 +53,7 @@ void my_sh_encode_set(char *line) {
 char *my_sh_decode_line(char *line) {
     char aux_line[strlen(line)];
 
-    char simple[2] = {'<', ';'};
+    char simple[5] = {'<', ';','(',')'};
     char comp[3] = {'>', '|', '&'};
 
     int c = 0;
@@ -84,7 +84,7 @@ char *my_sh_decode_line(char *line) {
 
         int stop = 0;
 
-        for (int x = 0; x < 2; x++) {
+        for (int x = 0; x < 5; x++) {
             if (line[i] == simple[x]) {
                 if (i != 0) {
                     if (line[i - 1] != ' ') {
@@ -141,8 +141,6 @@ char *my_sh_decode_line(char *line) {
 
     if (new_line[j - 1] != '\n') new_line[j++] = '\n';
     new_line[j] = 0;
-
-    printf("%s", new_line);
 
     return (char *) new_line;
 }
