@@ -53,11 +53,27 @@ void my_sh_encode_set(char *line) {
 char *my_sh_decode_line(char *line) {
     char aux_line[strlen(line)];
 
+    char simple[2] = {'<', ';'};
+    char comp[3] = {'>', '|', '&'};
+
+    int c = 0;
+
     int len = (int) strlen(line);
     int j = 0;
     for (int i = 0; i < len; i++) {
         if (line[i] == '#')
             break;
+
+        if (line[i] == '"') {
+            c = !c;
+            continue;
+        }
+
+        if (c) {
+            if (line[i] == ' ') aux_line[j++] = '#';
+            else aux_line[j++] = line[i];
+            continue;
+        }
 
         if (line[i] == ' ') {
             if (i != 0) {
@@ -66,87 +82,55 @@ char *my_sh_decode_line(char *line) {
                 continue;
         }
 
-        if (line[i] == '<') {
-            if (i != 0) {
-                if (line[i - 1] != ' ') {
-                    aux_line[j++] = ' ';
-                }
-            }
-            aux_line[j++] = line[i];
-            if (i != len - 1) {
-                if (line[i + 1] != ' ') {
-                    aux_line[j++] = ' ';
-                }
-            }
+        int stop = 0;
 
-            continue;
+        for (int x = 0; x < 2; x++) {
+            if (line[i] == simple[x]) {
+                if (i != 0) {
+                    if (line[i - 1] != ' ') {
+                        aux_line[j++] = ' ';
+                    }
+                }
+                aux_line[j++] = line[i];
+                if (i != len - 1) {
+                    if (line[i + 1] != ' ') {
+                        aux_line[j++] = ' ';
+                    }
+                }
+
+                stop = 1;
+                break;
+            }
         }
 
-        if (line[i] == '>') {
-            if (i != 0) {
-                if (line[i - 1] != ' ' && line[i - 1] != '>') {
-                    aux_line[j++] = ' ';
+        for (int x = 0; x < 3; x++) {
+            if (line[i] == comp[x]) {
+                if (i != 0) {
+                    if (line[i - 1] != ' ' && line[i - 1] != comp[x]) {
+                        aux_line[j++] = ' ';
+                    }
                 }
-            }
-            aux_line[j++] = line[i];
-            if (i != sizeof(line) - 1) {
-                if (line[i + 1] != ' ' && line[i + 1] != '>') {
-                    aux_line[j++] = ' ';
+                aux_line[j++] = line[i];
+                if (i != sizeof(line) - 1) {
+                    if (line[i + 1] != ' ' && line[i + 1] != comp[x]) {
+                        aux_line[j++] = ' ';
+                    }
                 }
-            }
 
-            continue;
+                stop = 1;
+                break;
+            }
         }
 
-        if (line[i] == '|') {
-            if (i != 0) {
-                if (line[i - 1] != ' ' && line[i - 1] != '|') {
-                    aux_line[j++] = ' ';
-                }
-            }
-            aux_line[j++] = line[i];
-            if (i != len - 1) {
-                if (line[i + 1] != ' ' && line[i + 1] != '|') {
-                    aux_line[j++] = ' ';
-                }
-            }
-
-            continue;
-        }
-
-        if (line[i] == '&') {
-            if (i != 0) {
-                if (line[i - 1] != ' ' && line[i - 1] != '&') {
-                    aux_line[j++] = ' ';
-                }
-            }
-            aux_line[j++] = line[i];
-            if (i != sizeof(line) - 1) {
-                if (line[i + 1] != ' ' && line[i + 1] != '&') {
-                    aux_line[j++] = ' ';
-                }
-            }
-
-            continue;
-        }
-
-        if (line[i] == ';') {
-            if (i != 0) {
-                if (line[i - 1] != ' ') {
-                    aux_line[j++] = ' ';
-                }
-            }
-            aux_line[j++] = line[i];
-            if (i != len - 1) {
-                if (line[i + 1] != ' ') {
-                    aux_line[j++] = ' ';
-                }
-            }
-
-            continue;
-        }
+        if (stop) continue;
 
         aux_line[j++] = line[i];
+    }
+
+    if (c) {
+        fprintf(stderr, "%s: incorrect format of line\n", ERROR);
+
+        return "false";
     }
 
     char *new_line = (char *) malloc(MY_SH_TOK_BUF_SIZE);
@@ -157,6 +141,8 @@ char *my_sh_decode_line(char *line) {
 
     if (new_line[j - 1] != '\n') new_line[j++] = '\n';
     new_line[j] = 0;
+
+    printf("%s", new_line);
 
     return (char *) new_line;
 }
@@ -173,9 +159,13 @@ char *sub_str(const char *line, int init, int end) {
     return new_line;
 }
 
-void my_sh_decode_set(char *line) {
-    for(int i=0;i< strlen(line);i++){
-        if(line[i]=='#') line[i]=' ';
+void my_sh_decode_c(char **args) {
+    for (int i = 0; args[i] != NULL; i++) {
+        int len = (int) strlen(args[i]);
+
+        for (int j = 0; j < len; j++) {
+            if (args[i][j] == '#') args[i][j] = ' ';
+        }
     }
 }
 

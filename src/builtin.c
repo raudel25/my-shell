@@ -280,7 +280,6 @@ int my_sh_set(char **args) {
 
                 if (args[2][strlen(args[2]) - 1] == '`') {
                     new_command = sub_str(args[2], 1, (int) strlen(args[2]) - 2);
-                    my_sh_decode_set(new_command);
                 }
 
                 if (new_command != NULL) {
@@ -392,9 +391,14 @@ char *my_sh_again(char *line) {
     int len_aux = 5;
     int len_help = 4;
 
+    int c = 0;
+
     int q;
     for (int i = 0; i < len; i++) {
+        if (line[i] == '"')c = !c;
+
         int equal = pat_equal(line, pat, i);
+        if (c) equal = 0;
 
         if (equal) {
             int w = i - 1;
