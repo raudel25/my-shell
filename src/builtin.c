@@ -269,9 +269,8 @@ int my_sh_set(char **args) {
                     removeAtIndexG(variables_key, index);
                     removeAtIndexG(variables_value, index);
                 }
-                char *aux_value = (char *) malloc(sizeof(char) * strlen(args[2]));
+                char *aux_value = array_to_str(args, 2, array_size(args));
                 char *aux_key = (char *) malloc(sizeof(char) * strlen(args[1]));
-                strcpy(aux_value, args[2]);
                 strcpy(aux_key, args[1]);
                 appendG(variables_key, aux_key);
                 appendG(variables_value, aux_value);

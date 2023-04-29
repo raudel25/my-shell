@@ -189,7 +189,20 @@ int pat_equal(char *line, char *pat, int pos) {
     return equal;
 }
 
-void push_str(char *line,char c){
+char *array_to_str(char **args, int init, int end) {
+    char *new_line = (char *) malloc(MY_SH_TOK_BUF_SIZE);
+    strcpy(new_line, "");
+
+    for (int i = init; i < end - 1; i++) {
+        strcat(new_line, args[i]);
+        strcat(new_line, " ");
+    }
+    strcat(new_line, args[end - 1]);
+
+    return new_line;
+}
+
+void push_str(char *line, char c) {
     int w = (int) strlen(line);
     line[w++] = c;
     line[w] = 0;

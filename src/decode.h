@@ -21,4 +21,6 @@ int pat_equal(char *line, char *pat, int pos);
 
 void push_str(char *line, char c);
 
+char *array_to_str(char **args, int init, int end);
+
 #endif //SHELL_DECODE_H
