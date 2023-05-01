@@ -6,7 +6,7 @@
 #include <string.h>
 #include <readline/readline.h>
 
-#include "decode.h"
+#include "utils.h"
 #include "execute.h"
 #include "list.h"
 #include "builtin.h"
@@ -63,8 +63,14 @@ _Noreturn void my_sh_loop() {
         line = prompt();
 
         char *line_again = my_sh_again(line);
-        char *new_line = my_sh_decode_line(line_again);
+        char *new_line = my_sh_format_line(line_again);
         if (line[0] != ' ') my_sh_save_history(line_again);
+
+        if (new_line == NULL) {
+            free(line);
+            free(line_again);
+            continue;
+        }
 
         my_sh_execute(new_line);
 
@@ -81,6 +87,7 @@ int main() {
     pw = getpwuid(uid);
 
     background_pid = createList();
+    special_spaces = createList();
     my_sh_init_variables();
     my_sh_load_history();
 

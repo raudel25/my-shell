@@ -11,7 +11,7 @@
 #include <readline/history.h>
 
 #include "builtin.h"
-#include "decode.h"
+#include "utils.h"
 #include "help.c"
 #include "execute.h"
 
@@ -261,86 +261,77 @@ int my_sh_false() {
 
 int my_sh_set(char **args) {
     int status = 0;
+    int len = array_size(args);
 
     if (args[1] != NULL && args[2] != NULL) {
-            if (args[2][0] != '`') {
-                int index = contains_key(args[1]);
-                if (index != -1) {
-                    removeAtIndexG(variables_key, index);
-                    removeAtIndexG(variables_value, index);
-                }
-                char *aux_value = array_to_str(args, 2, array_size(args));
-                char *aux_key = (char *) malloc(sizeof(char) * strlen(args[1]));
-                strcpy(aux_key, args[1]);
-                appendG(variables_key, aux_key);
-                appendG(variables_value, aux_value);
-            } else {
-                char *new_command = NULL;
+        if (strcmp(args[2], "(") != 0) {
+            int index = contains_key(args[1]);
+            if (index != -1) {
+                removeAtIndexG(variables_key, index);
+                removeAtIndexG(variables_value, index);
+            }
+            char *aux_value = array_to_str(args, 2, len);
+            char *aux_key = (char *) malloc(sizeof(char) * strlen(args[1]));
+            strcpy(aux_key, args[1]);
+            appendG(variables_key, aux_key);
+            appendG(variables_value, aux_value);
+        } else {
+            if (strcmp(args[len - 1], ")") == 0 && len >= 5) {
+                char *buffer = (char *) malloc(MY_SH_TOK_BUF_SIZE);
+                char c = 1;
+                int i = 0;
+                fflush(stdout);
 
-                if (args[2][strlen(args[2]) - 1] == '`') {
-                    new_command = sub_str(args[2], 1, (int) strlen(args[2]) - 2);
-                }
+                int temp_stdout;
+                temp_stdout = dup(fileno(stdout));
 
-                if (new_command != NULL) {
-                    char *new_command_format = my_sh_decode_line(new_command);
+                int fd[2];
+                pipe(fd);
+                dup2(fd[1], fileno(stdout));
 
-                    char *buffer = (char *) malloc(MY_SH_TOK_BUF_SIZE);
-                    char c = 1;
-                    int i = 0;
-                    fflush(stdout);
+                my_sh_parser(args, 3, len - 1, -1, -1);
 
-                    int temp_stdout;
-                    temp_stdout = dup(fileno(stdout));
+                write(fd[1], "", 1);
+                close(fd[1]);
 
-                    int fd[2];
-                    pipe(fd);
-                    dup2(fd[1], fileno(stdout));
+                fflush(stdout);
+                dup2(temp_stdout, fileno(stdout));
+                close(temp_stdout);
 
-                    my_sh_execute(new_command_format);
-
-                    write(fd[1], "", 1);
-                    close(fd[1]);
-
-                    fflush(stdout);
-                    dup2(temp_stdout, fileno(stdout));
-                    close(temp_stdout);
-
-                    while (1) {
-                        read(fd[0], &c, 1);
-                        buffer[i] = c;
-                        if (c == 0)
-                            break;
-                        i++;
-                        if (i % MY_SH_TOK_BUF_SIZE == 0) {
-                            buffer = (char *) realloc(buffer, i * 2);
-                        }
+                while (1) {
+                    read(fd[0], &c, 1);
+                    buffer[i] = c;
+                    if (c == 0)
+                        break;
+                    i++;
+                    if (i % MY_SH_TOK_BUF_SIZE == 0) {
+                        buffer = (char *) realloc(buffer, i * 2);
                     }
+                }
 
-                    close(fd[0]);
+                close(fd[0]);
 
-                    if (i != 0) {
-                        buffer[i] = 0;
-                        if (buffer[i - 1] == '\n')
-                            buffer[i - 1] = 0;
-                        int index = contains_key(args[1]);
-                        if (index != -1) {
-                            removeAtIndexG(variables_key, index);
-                            removeAtIndexG(variables_value, index);
-                        }
-                        char *aux_key = (char *) malloc(sizeof(char) * strlen(buffer));
-                        strcpy(aux_key, args[1]);
-                        appendG(variables_key, aux_key);
-                        appendG(variables_value, buffer);
-                    } else {
-                        fprintf(stderr, "%s: the output of the command is null\n", ERROR);
-                        status = 1;
+                if (i != 0) {
+                    buffer[i] = 0;
+                    if (buffer[i - 1] == '\n')
+                        buffer[i - 1] = 0;
+                    int index = contains_key(args[1]);
+                    if (index != -1) {
+                        removeAtIndexG(variables_key, index);
+                        removeAtIndexG(variables_value, index);
                     }
-                    free(new_command);
-                    free(new_command_format);
+                    char *aux_key = (char *) malloc(sizeof(char) * strlen(buffer));
+                    strcpy(aux_key, args[1]);
+                    appendG(variables_key, aux_key);
+                    appendG(variables_value, buffer);
                 } else {
-                    fprintf(stderr, "%s: incorrect command set\n", ERROR);
+                    fprintf(stderr, "%s: the output of the command is null\n", ERROR);
                     status = 1;
                 }
+            } else {
+                fprintf(stderr, "%s: incorrect command set\n", ERROR);
+                status = 1;
+            }
             }
     } else {
         status = 1;
@@ -357,7 +348,9 @@ int my_sh_background(char **args, int init, int end) {
         setpgid(0, 0);
 
         exit(my_sh_parser(args, init, end, -1, -1));
-    } else if (pid > 0) {
+    } else if (pid < 0) {
+        perror(ERROR);
+    } else {
         setpgid(pid, pid);
         append(background_pid, pid);
         printf("[%d]\t%d\n", background_pid->len, pid);
@@ -382,7 +375,8 @@ void get_again(char *line, int index) {
 
 char *my_sh_again(char *line) {
     char *aux = (char *) malloc(MY_SH_TOK_BUF_SIZE);
-    strcpy(aux, "");
+    aux[0] = 0;
+    int j = 0;
 
     char *pat = "again";
     char *pat_help = "help";
@@ -409,7 +403,7 @@ char *my_sh_again(char *line) {
 
             int help = pat_equal(line, pat_help, w - len_help + 1);
             if (help) {
-                push_str(aux, line[i]);
+                push_str(aux, line[i], &j);
                 continue;
             }
         }
@@ -453,7 +447,7 @@ char *my_sh_again(char *line) {
 
             free(num);
         } else {
-            push_str(aux, line[i]);
+            push_str(aux, line[i], &j);
         }
     }
 

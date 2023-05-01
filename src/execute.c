@@ -8,7 +8,7 @@
 #include <string.h>
 #include <fcntl.h>
 
-#include "decode.h"
+#include "utils.h"
 #include "builtin.h"
 #include "execute.h"
 
@@ -129,7 +129,6 @@ int my_sh_launch_not_out(char **args, int init, int end, int fd_in, int fd_out) 
 }
 
 void my_sh_execute(char *line) {
-    my_sh_encode_set(line);
     char **args = my_sh_split_line(line, MY_SH_TOK_DELIM);
     my_sh_decode_c(args);
 
