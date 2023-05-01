@@ -53,8 +53,7 @@ void my_sh_encode_set(char *line) {
 char *my_sh_decode_line(char *line) {
     char aux_line[strlen(line)];
 
-    char simple[5] = {'<', ';','(',')'};
-    char comp[3] = {'>', '|', '&'};
+    char pat[7] = {'<', ';', '(', ')', '>', '|', '&'};
 
     int c = 0;
 
@@ -75,6 +74,14 @@ char *my_sh_decode_line(char *line) {
             continue;
         }
 
+        if (line[i] == '\\') {
+            if (i != len - 1 && line[i + 1] == ' ') {
+                aux_line[j++] = '#';
+                i++;
+            }
+            continue;
+        }
+
         if (line[i] == ' ') {
             if (i != 0) {
                 if (line[i - 1] == ' ') continue;
@@ -84,35 +91,16 @@ char *my_sh_decode_line(char *line) {
 
         int stop = 0;
 
-        for (int x = 0; x < 5; x++) {
-            if (line[i] == simple[x]) {
+        for (int x = 0; x < 7; x++) {
+            if (line[i] == pat[x]) {
                 if (i != 0) {
-                    if (line[i - 1] != ' ') {
-                        aux_line[j++] = ' ';
-                    }
-                }
-                aux_line[j++] = line[i];
-                if (i != len - 1) {
-                    if (line[i + 1] != ' ') {
-                        aux_line[j++] = ' ';
-                    }
-                }
-
-                stop = 1;
-                break;
-            }
-        }
-
-        for (int x = 0; x < 3; x++) {
-            if (line[i] == comp[x]) {
-                if (i != 0) {
-                    if (line[i - 1] != ' ' && line[i - 1] != comp[x]) {
+                    if (line[i - 1] != ' ' && line[i - 1] != pat[x]) {
                         aux_line[j++] = ' ';
                     }
                 }
                 aux_line[j++] = line[i];
                 if (i != sizeof(line) - 1) {
-                    if (line[i + 1] != ' ' && line[i + 1] != comp[x]) {
+                    if (line[i + 1] != ' ' && (x < 4 || line[i + 1] != pat[x])) {
                         aux_line[j++] = ' ';
                     }
                 }
@@ -141,6 +129,8 @@ char *my_sh_decode_line(char *line) {
 
     if (new_line[j - 1] != '\n') new_line[j++] = '\n';
     new_line[j] = 0;
+
+    printf("%s", new_line);
 
     return (char *) new_line;
 }
