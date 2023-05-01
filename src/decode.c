@@ -130,8 +130,6 @@ char *my_sh_decode_line(char *line) {
     if (new_line[j - 1] != '\n') new_line[j++] = '\n';
     new_line[j] = 0;
 
-    printf("%s", new_line);
-
     return (char *) new_line;
 }
 
