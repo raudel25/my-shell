@@ -8,7 +8,7 @@
 
 #include "utils.h"
 
-#define ERROR "\033[1;31mmy_sh\033[0m"
+#define ERROR "\033[0;31mmy_sh\033[0m"
 #define MY_SH_TOK_BUF_SIZE 1024
 
 List *special_spaces = NULL;

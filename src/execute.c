@@ -13,7 +13,7 @@
 #include "execute.h"
 
 #define MY_SH_TOK_DELIM " \t\r\n\a"
-#define ERROR "\033[1;31mmy_sh\033[0m"
+#define ERROR "\033[0;31mmy_sh\033[0m"
 #define MY_SH_TOK_BUF_SIZE 1024
 
 int redirect_out(char *fileName) {

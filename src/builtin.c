@@ -363,13 +363,15 @@ int special_char(char c) {
     return c == '|' || c == ';' || c == '&' || c == '#' || c == '`';
 }
 
-void get_again(char *line, int index) {
+void get_again(char *line, int index, int *j) {
     if (index <= history_length && index > 0) {
         HIST_ENTRY **list = history_list();
         strcat(line, list[index - 1]->line);
+        (*j) += (int) strlen(list[index - 1]->line);
     } else {
         fprintf(stderr, "%s: incorrect command again\n", ERROR);
         strcat(line, "false");
+        (*j) += 5;
     }
 }
 
@@ -410,7 +412,7 @@ char *my_sh_again(char *line) {
 
         if (equal) {
             if (i + len_aux == len || special_char(line[i + len_aux])) {
-                get_again(aux, history_length);
+                get_again(aux, history_length, &j);
                 i += (len_aux - 1);
                 continue;
             }
@@ -421,7 +423,7 @@ char *my_sh_again(char *line) {
             }
 
             if (s1 == len) {
-                get_again(aux, history_length);
+                get_again(aux, history_length, &j);
                 break;
             }
 
@@ -435,13 +437,12 @@ char *my_sh_again(char *line) {
             char *p;
             q = (int) strtol(num, &p, 10);
 
-            if (strlen(p) != 0) {
-                HIST_ENTRY **list = history_list();
-                strcat(aux, list[history_length - 1]->line);
+            if (strlen(p) != 0 || s1 == s2) {
+                get_again(aux, history_length, &j);
 
                 i += (len_aux - 1);
             } else {
-                get_again(aux, q);
+                get_again(aux, q, &j);
                 i = s2 - 1;
             }
 
